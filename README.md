@@ -18,7 +18,7 @@ Score > 0.70 → high confidence
    - If (best − second_best) < 0.10 → unknown (ambiguous)
 
 ## 🚀 **Live Demo**
-**Hosted Prototype**: [https://pdf-classifier-idfy.streamlit.app](https://pdf-classifier-idfy.streamlit.app)
+**Hosted Prototype**: [PDF Document Classifier](https://pdf-classifier-idfy.streamlit.app)
 
 ## 📋 **Assignment Submission**
 
