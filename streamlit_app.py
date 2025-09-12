@@ -36,8 +36,8 @@ from field_extraction import (
 
 # Page configuration
 st.set_page_config(
-    page_title="PDF Document Classifier", 
-    page_icon="📄", 
+    page_title="PDF Document Classifier",
+    page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -158,7 +158,7 @@ st.markdown("""
 # Header
 st.markdown("""
 <div class="main-header">
-    <h1>📄 PDF Document Classifier</h1>
+    <h1>PDF Document Classifier</h1>
     <p>Upload PDFs to automatically classify them into categories like invoice, bank statement, resume, ITR, or government ID</p>
 </div>
 """, unsafe_allow_html=True)
@@ -236,25 +236,25 @@ if 'processing_history' not in st.session_state:
     st.session_state.processing_history = []
 
 # Sidebar configuration
-st.sidebar.header("⚙️ Configuration")
+st.sidebar.header("Configuration")
 
 # Class examples folder configuration
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
 examples_dir = st.sidebar.text_input("Class examples folder", value=default_examples)
 
 if not os.path.isdir(examples_dir):
-    st.sidebar.warning("⚠️ Invalid folder path. Using default.")
+    st.sidebar.warning("Invalid folder path. Using default.")
     examples_dir = default_examples
 
 # Display available classes
 if os.path.isdir(examples_dir):
     available_classes = [d for d in os.listdir(examples_dir) if os.path.isdir(os.path.join(examples_dir, d))]
-    st.sidebar.success(f"✅ Found {len(available_classes)} classes: {', '.join(available_classes)}")
+    st.sidebar.success(f"Found {len(available_classes)} classes: {', '.join(available_classes)}")
 else:
-    st.sidebar.error("❌ Class examples folder not found")
+    st.sidebar.error("Class examples folder not found")
 
 # LLM Configuration
-st.sidebar.header("🤖 AI Features")
+st.sidebar.header("AI Features")
 
 # Check Gemini availability - support both local env and Streamlit secrets
 gemini_api_key = None
@@ -267,29 +267,29 @@ except (KeyError, FileNotFoundError):
     gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_AVAILABLE and gemini_api_key:
-    st.sidebar.success("✅ AI Powered")
+    st.sidebar.success("AI Powered")
     # Configure Gemini
     genai.configure(api_key=gemini_api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
     enable_llm_enhancement = True
     enable_llm_fields = True
 else:
-    st.sidebar.warning("⚠️ AI Not Available")
+    st.sidebar.warning("AI Not Available")
     enable_llm_enhancement = False
     enable_llm_fields = False
     gemini_model = None
 
 # OCR Configuration
-st.sidebar.header("📄 OCR Settings")
+st.sidebar.header("OCR Settings")
 ocr_dpi = st.sidebar.slider("OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower")
 ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing")
 
 # Load model and centroids
-with st.spinner("🔄 Loading AI model and building class centroids..."):
+with st.spinner("Loading AI model and building class centroids..."):
     model, centroids = get_model_and_centroids(examples_dir)
 
 # Help section
-st.sidebar.header("💡 How to Use")
+st.sidebar.header("How to Use")
 st.sidebar.info("""
 **Quick Start:**
 1. Upload a PDF file
@@ -308,7 +308,7 @@ st.sidebar.info("""
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.header("📤 Upload PDF Document")
+    st.header("Upload PDF Document")
     uploaded = st.file_uploader(
         "Choose a PDF file", 
         type=["pdf"],
@@ -346,7 +346,7 @@ if uploaded is not None:
         result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, ocr_language)
         fields = result.get("fields", {})
         
-        status_text.text("✅ Classification complete!")
+        status_text.text("Classification complete!")
         progress_bar.progress(100)
         time.sleep(0.5)
         progress_bar.empty()
@@ -372,12 +372,12 @@ if uploaded is not None:
     except Exception as e:
         progress_bar.empty()
         status_text.empty()
-        st.error(f"❌ Error processing PDF: {str(e)}")
+        st.error(f"Error processing PDF: {str(e)}")
         st.info("Please try uploading a different PDF file or check if the file is not corrupted.")
         st.stop()
 
     # Results section
-    st.header("🎯 Classification Results")
+    st.header("Classification Results")
     
     # Main result display
     col1, col2, col3 = st.columns([2, 1, 1])
@@ -409,11 +409,11 @@ if uploaded is not None:
         llm_reason = result.get("llm_reason", "")
         if llm_reason:
             if "High confidence" in llm_reason:
-                st.info(f"💡 {llm_reason}")
+                st.info(f"Note: {llm_reason}")
             elif "Medium confidence" in llm_reason:
-                st.success(f"🤖 {llm_reason}")
+                st.success(f"AI Enhancement: {llm_reason}")
             elif "Low confidence" in llm_reason:
-                st.warning(f"⚠️ {llm_reason}")
+                st.warning(f"Warning: {llm_reason}")
     
     with col3:
         # Custom styled metrics with controlled font sizes
@@ -439,7 +439,7 @@ if uploaded is not None:
     # AI Insights section removed - user requested removal
 
     # Tabs for additional information
-    tab1, tab2, tab3 = st.tabs(["📄 Extracted Text", "📊 Raw Data", "💾 Download"])
+    tab1, tab2, tab3 = st.tabs(["Extracted Text", "Raw Data", "Download"])
     
     with tab1:
         # Get text from result or show placeholder
@@ -451,7 +451,7 @@ if uploaded is not None:
     
     with tab3:
         st.download_button(
-            label="📥 Download JSON Result",
+            label="Download JSON Result",
             data=json.dumps(result, indent=2).encode("utf-8"),
             file_name=f"classification_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             mime="application/json",
@@ -465,7 +465,7 @@ if uploaded is not None:
         pass
 
 # Batch processing section
-st.header("📁 Batch Processing")
+st.header("Batch Processing")
 st.write("Upload multiple PDFs for batch classification")
 
 uploaded_files = st.file_uploader(
@@ -515,10 +515,10 @@ if uploaded_files:
                     st.metric("Text Length", f"{text_length:,} chars")
                 
                 # Show success indicator
-                st.success("✅ Processed successfully")
+                st.success("Processed successfully")
                 
             except Exception as e:
-                st.error(f"❌ Error processing {uploaded_file.name}: {str(e)}")
+                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
                 # Add error result to batch
                 error_result = {
                     "filename": uploaded_file.name,
@@ -572,7 +572,7 @@ if uploaded_files:
         }
         
         st.download_button(
-            label="📥 Download Batch Results",
+            label="Download Batch Results",
             data=json.dumps(batch_json, indent=2).encode("utf-8"),
             file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             mime="application/json",
