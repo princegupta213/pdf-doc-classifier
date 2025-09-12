@@ -258,19 +258,14 @@ except (KeyError, FileNotFoundError):
     gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_AVAILABLE and gemini_api_key:
-    st.sidebar.success("✅ Gemini AI Available")
-    st.sidebar.info("Google Gemini API key detected. AI features enabled.")
-    
+    st.sidebar.success("✅ AI Powered")
     # Configure Gemini
     genai.configure(api_key=gemini_api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    # LLM options
-    enable_llm_enhancement = st.sidebar.checkbox("Enable Gemini AI Enhancement", value=True, help="Use Gemini AI to improve classifications")
-    enable_llm_fields = st.sidebar.checkbox("Enable Gemini Field Extraction", value=True, help="Use Gemini AI for better field extraction")
+    enable_llm_enhancement = True
+    enable_llm_fields = True
 else:
-    st.sidebar.warning("⚠️ Gemini AI Not Available")
-    st.sidebar.info("Set GEMINI_API_KEY in Streamlit secrets or environment variable to enable AI features.")
+    st.sidebar.warning("⚠️ AI Not Available")
     enable_llm_enhancement = False
     enable_llm_fields = False
     gemini_model = None
@@ -284,23 +279,21 @@ ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin", "e
 with st.spinner("🔄 Loading AI model and building class centroids..."):
     model, centroids = get_model_and_centroids(examples_dir)
 
-# Sidebar stats
-st.sidebar.header("📊 Statistics")
-st.sidebar.metric("Available Classes", len(centroids))
-st.sidebar.metric("Model Status", "✅ Loaded")
-st.sidebar.metric("Files Processed", len(st.session_state.processing_history))
+# Help section
+st.sidebar.header("💡 How to Use")
+st.sidebar.info("""
+**Quick Start:**
+1. Upload a PDF file
+2. Get instant classification
+3. View analysis details
 
-# Processing history
-if st.session_state.processing_history:
-    st.sidebar.header("📋 Recent Activity")
-    for entry in st.session_state.processing_history[-5:]:  # Show last 5
-        timestamp = datetime.fromisoformat(entry["timestamp"]).strftime("%H:%M")
-        st.sidebar.text(f"{timestamp} - {entry['filename'][:20]}...")
-        st.sidebar.text(f"  → {entry['classification']} ({entry['confidence']:.1%})")
-    
-    if st.sidebar.button("🗑️ Clear History"):
-        st.session_state.processing_history = []
-        st.rerun()
+**Supported Documents:**
+• Invoices
+• Bank Statements  
+• Resumes
+• ITR Forms
+• Government IDs
+""")
 
 # Main content area
 col1, col2 = st.columns([2, 1])
@@ -424,34 +417,7 @@ if uploaded is not None:
     
     # Extracted fields section removed - user requested removal
     
-    # AI Insights section - PDF Summary
-    st.subheader("🤖 AI Insights")
-    
-    # Generate PDF summary using Gemini AI
-    if gemini_model and len(text.strip()) > 50:
-        try:
-            summary_prompt = f"""
-            Please provide a concise summary of this document in 2-3 sentences. Focus on the main content and purpose of the document.
-            
-            Document text: {text[:3000]}
-            
-            Provide a clear, professional summary.
-            """
-            
-            summary_response = gemini_model.generate_content(
-                summary_prompt,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=200,
-                    temperature=0.3
-                )
-            )
-            
-            st.info(f"**Document Summary:** {summary_response.text}")
-            
-        except Exception as e:
-            st.warning(f"Could not generate AI summary: {str(e)}")
-    else:
-        st.info("AI summary not available - document text too short or Gemini AI not enabled.")
+    # AI Insights section removed - user requested removal
         
         if result.get("field_hints"):
             st.subheader("🔍 Field Extraction Hints")
