@@ -36,7 +36,7 @@ from field_extraction import (
 
 # Page configuration
 st.set_page_config(
-    page_title="PDF Document Classifier / PDF दस्तावेज़ वर्गीकरणकर्ता", 
+    page_title="PDF Document Classifier", 
     page_icon="📄", 
     layout="wide",
     initial_sidebar_state="expanded"
@@ -236,12 +236,12 @@ else:
     gemini_model = None
 
 # OCR Configuration
-st.sidebar.header("📄 OCR Settings / OCR सेटिंग्स")
-ocr_dpi = st.sidebar.slider("OCR DPI / OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower / उच्च DPI = बेहतर गुणवत्ता लेकिन धीमा")
-ocr_language = st.sidebar.selectbox("OCR Language / OCR भाषा", ["eng+hin", "eng", "hin", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing / OCR प्रसंस्करण के लिए भाषा")
+st.sidebar.header("📄 OCR Settings")
+ocr_dpi = st.sidebar.slider("OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower")
+ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing")
 
 # Load model and centroids
-with st.spinner("🔄 Loading AI model and building class centroids... / AI मॉडल लोड कर रहे हैं और क्लास सेंट्रोइड्स बना रहे हैं..."):
+with st.spinner("🔄 Loading AI model and building class centroids..."):
     model, centroids = get_model_and_centroids(examples_dir)
 
 # Sidebar stats
@@ -266,11 +266,11 @@ if st.session_state.processing_history:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.header("📤 Upload PDF Document / PDF दस्तावेज़ अपलोड करें")
+    st.header("📤 Upload PDF Document")
     uploaded = st.file_uploader(
-        "Choose a PDF file / PDF फ़ाइल चुनें", 
+        "Choose a PDF file", 
         type=["pdf"],
-        help="Upload a PDF document to classify it automatically / दस्तावेज़ को स्वचालित रूप से वर्गीकृत करने के लिए PDF अपलोड करें"
+        help="Upload a PDF document to classify it automatically"
     )
 
 with col2:
@@ -472,14 +472,14 @@ if uploaded is not None:
         pass
 
 # Batch processing section
-st.header("📁 Batch Processing / बैच प्रसंस्करण")
-st.write("Upload multiple PDFs for batch classification / बैच वर्गीकरण के लिए कई PDF अपलोड करें")
+st.header("📁 Batch Processing")
+st.write("Upload multiple PDFs for batch classification")
 
 uploaded_files = st.file_uploader(
-    "Choose multiple PDF files / कई PDF फ़ाइलें चुनें", 
+    "Choose multiple PDF files", 
     type=["pdf"],
     accept_multiple_files=True,
-    help="Select multiple PDF files to process them all at once / सभी को एक साथ प्रसंस्करण के लिए कई PDF फ़ाइलें चुनें"
+    help="Select multiple PDF files to process them all at once"
 )
 
 if uploaded_files:

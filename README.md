@@ -1,8 +1,8 @@
-# PDF Document Classifier / PDF दस्तावेज़ वर्गीकरणकर्ता
+# PDF Document Classifier
 
 Classify PDFs into categories like invoice, bank statement, resume, ITR, and government_id using text extraction, cleaning, sentence embeddings, and cosine similarity with keyword boosting.
 
-**भाषा समर्थन / Language Support:** English + Hindi (English + हिंदी)
+**Language Support:** English interface with Hindi OCR support
 
 ## Approach
 
@@ -51,11 +51,11 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Language Support / भाषा समर्थन
+## Language Support
 
-The application supports both English and Hindi:
+The application provides English interface with Hindi OCR support:
 - **OCR Processing**: English + Hindi (`eng+hin`) by default
-- **UI Interface**: Bilingual display (English / हिंदी)
+- **UI Interface**: English
 - **Document Classification**: Works with documents in both languages
 
 ### OCR Language Options:
