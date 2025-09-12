@@ -3,8 +3,15 @@
 import os
 import json
 from typing import Dict, List, Optional, Tuple
-import openai
 from dataclasses import dataclass
+
+# Import OpenAI with version compatibility
+try:
+    from openai import OpenAI
+    OPENAI_NEW_API = True
+except ImportError:
+    import openai
+    OPENAI_NEW_API = False
 
 
 @dataclass
@@ -23,10 +30,34 @@ class LLMPromptManager:
     
     def __init__(self, api_key: Optional[str] = None):
         """Initialize with OpenAI API key."""
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        # Try multiple sources for API key
+        self.api_key = (
+            api_key or 
+            os.getenv("OPENAI_API_KEY") or
+            self._get_secrets_key()
+        )
+        
+        # Initialize OpenAI client based on version
         if self.api_key:
-            openai.api_key = self.api_key
+            if OPENAI_NEW_API:
+                self.client = OpenAI(api_key=self.api_key)
+            else:
+                openai.api_key = self.api_key
+                self.client = None
+        else:
+            self.client = None
+            
         self.model = "gpt-3.5-turbo"  # Can be upgraded to gpt-4
+    
+    def _get_secrets_key(self) -> Optional[str]:
+        """Try to get API key from Streamlit secrets."""
+        try:
+            import streamlit as st
+            if hasattr(st, 'secrets') and 'openai' in st.secrets:
+                return st.secrets['openai']['api_key']
+        except:
+            pass
+        return None
     
     def is_available(self) -> bool:
         """Check if LLM is available."""
@@ -149,17 +180,28 @@ Respond in JSON format:
         try:
             prompt = self.get_classification_prompt(text, current_classification)
             
-            response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an expert document classifier. Always respond with valid JSON."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=1000,
-                temperature=0.1
-            )
-            
-            result_text = response.choices[0].message.content.strip()
+            if OPENAI_NEW_API and self.client:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert document classifier. Always respond with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=1000,
+                    temperature=0.1
+                )
+                result_text = response.choices[0].message.content.strip()
+            else:
+                response = openai.ChatCompletion.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert document classifier. Always respond with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=1000,
+                    temperature=0.1
+                )
+                result_text = response.choices[0].message.content.strip()
             
             # Try to parse JSON response
             try:
@@ -193,17 +235,28 @@ Respond in JSON format:
         try:
             prompt = self.get_field_extraction_prompt(text, document_type)
             
-            response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an expert at extracting structured information from documents. Always respond with valid JSON."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=800,
-                temperature=0.1
-            )
-            
-            result_text = response.choices[0].message.content.strip()
+            if OPENAI_NEW_API and self.client:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert at extracting structured information from documents. Always respond with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=800,
+                    temperature=0.1
+                )
+                result_text = response.choices[0].message.content.strip()
+            else:
+                response = openai.ChatCompletion.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert at extracting structured information from documents. Always respond with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=800,
+                    temperature=0.1
+                )
+                result_text = response.choices[0].message.content.strip()
             
             try:
                 return json.loads(result_text)
@@ -222,17 +275,28 @@ Respond in JSON format:
         try:
             prompt = self.get_enhancement_prompt(text, classification)
             
-            response = openai.ChatCompletion.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an expert document analyst. Always respond with valid JSON."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=1200,
-                temperature=0.1
-            )
-            
-            result_text = response.choices[0].message.content.strip()
+            if OPENAI_NEW_API and self.client:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert document analyst. Always respond with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=1200,
+                    temperature=0.1
+                )
+                result_text = response.choices[0].message.content.strip()
+            else:
+                response = openai.ChatCompletion.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are an expert document analyst. Always respond with valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=1200,
+                    temperature=0.1
+                )
+                result_text = response.choices[0].message.content.strip()
             
             try:
                 result = json.loads(result_text)
