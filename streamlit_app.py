@@ -93,6 +93,78 @@ def enhance_with_gemini(text: str, classification: dict, model) -> dict:
         print(f"Gemini enhancement failed: {e}")
         return classification
 
+
+def enhance_with_gemini_fallback(text: str, result: Dict, model) -> Dict:
+    """Use Gemini AI to re-classify unknown documents with good confidence."""
+    try:
+        confidence = result.get("confidence", 0.0)
+        
+        prompt = f"""
+        This document was classified as "unknown" but has a confidence score of {confidence:.2f}, suggesting it might be classifiable.
+        
+        Document text: {text[:2000]}
+        
+        Please analyze this document and determine what type it is. Choose from these categories:
+        - invoice: Bills, receipts, payment requests
+        - bank_statement: Bank account statements, transaction records
+        - resume: CV, job applications, professional profiles
+        - ITR: Income tax returns, tax documents
+        - government_id: Passport, driver's license, national ID, etc.
+        - unknown: If truly unclassifiable
+        
+        Respond with:
+        1. Document type (one of the categories above)
+        2. Confidence level (0.0 to 1.0)
+        3. Brief explanation of why you classified it this way
+        
+        Format: TYPE: [category] | CONFIDENCE: [0.0-1.0] | REASON: [explanation]
+        """
+        
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.1,
+                max_output_tokens=300,
+            )
+        )
+        
+        if response and response.text:
+            # Parse the response
+            response_text = response.text.strip()
+            result["ai_insights"] = f"LLM Fallback Analysis: {response_text}"
+            result["ai_enhanced"] = True
+            
+            # Try to extract new classification from response
+            if "TYPE:" in response_text and "CONFIDENCE:" in response_text:
+                try:
+                    lines = response_text.split('\n')
+                    for line in lines:
+                        if "TYPE:" in line:
+                            new_type = line.split("TYPE:")[1].split("|")[0].strip().lower()
+                            if new_type in ["invoice", "bank_statement", "resume", "itr", "government_id"]:
+                                result["label"] = new_type
+                                result["llm_fallback"] = True
+                                result["original_label"] = "unknown"
+                                break
+                        if "CONFIDENCE:" in line:
+                            conf_part = line.split("CONFIDENCE:")[1].split("|")[0].strip()
+                            try:
+                                new_confidence = float(conf_part)
+                                result["confidence"] = new_confidence
+                            except ValueError:
+                                pass
+                except Exception:
+                    pass
+        else:
+            result["ai_insights"] = "LLM fallback analysis unavailable"
+            result["ai_enhanced"] = False
+            
+    except Exception as e:
+        result["ai_insights"] = f"LLM fallback failed: {str(e)}"
+        result["ai_enhanced"] = False
+    
+    return result
+
 # Custom CSS for better styling
 st.markdown("""
 <style>
@@ -208,20 +280,37 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     result["extracted_text"] = text  # Include the actual extracted text
     result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
     
-    # Enhance with Gemini AI only for medium confidence cases (0.3-0.7)
-    # High confidence (>0.7) doesn't need LLM enhancement
+    # Enhance with Gemini AI for medium confidence cases (0.3-0.7) and unknown fallback
     confidence = result.get("confidence", 0.0)
-    if (enable_llm_enhancement and gemini_model and len(text.strip()) > 50 and 
-        0.3 <= confidence <= 0.7):
-        result = enhance_with_gemini(text, result, gemini_model)
+    label = result.get("label", "unknown")
+    
+    # Use LLM for medium confidence OR for unknown documents with medium/high confidence
+    should_use_llm = (
+        enable_llm_enhancement and gemini_model and len(text.strip()) > 50 and (
+            (0.3 <= confidence <= 0.7) or  # Medium confidence range
+            (label == "unknown" and confidence >= 0.3)  # Unknown but medium/high confidence fallback
+        )
+    )
+    
+    if should_use_llm:
+        if label == "unknown" and confidence >= 0.3:
+            # Special fallback for unknown documents with good confidence
+            result = enhance_with_gemini_fallback(text, result, gemini_model)
+            result["llm_reason"] = f"Unknown classification with {confidence:.2f} confidence - using LLM fallback"
+        else:
+            # Regular medium confidence enhancement
+            result = enhance_with_gemini(text, result, gemini_model)
+            result["llm_reason"] = f"Medium confidence ({confidence:.2f}) - using LLM for enhancement"
+        
         # Mark LLM involvement
         result["method"] += "+LLM"
         result["ai_provider"] = "Gemini"
-        result["llm_reason"] = f"Medium confidence ({confidence:.2f}) - using LLM for enhancement"
-    elif confidence > 0.7:
+    elif confidence > 0.7 and label != "unknown":
         result["llm_reason"] = f"High confidence ({confidence:.2f}) - LLM not needed"
     elif confidence < 0.3:
         result["llm_reason"] = f"Low confidence ({confidence:.2f}) - LLM not used (unknown classification)"
+    elif label == "unknown" and confidence < 0.3:
+        result["llm_reason"] = f"Unknown classification with low confidence ({confidence:.2f}) - LLM not used"
     
     # Cleanup
     try:
@@ -394,9 +483,14 @@ if uploaded is not None:
             color = "#28a745"
             conf_class = "confidence-high"
         
+        # Check if this was an LLM fallback classification
+        fallback_indicator = ""
+        if result.get("llm_fallback"):
+            fallback_indicator = " (LLM Fallback)"
+        
         st.markdown(f"""
         <div class="metric-card">
-            <h3 style="margin: 0; color: {color};">📄 {label.title()}</h3>
+            <h3 style="margin: 0; color: {color};">{label.title()}{fallback_indicator}</h3>
             <p style="margin: 0.5rem 0 0 0; color: #666;">Document Classification</p>
         </div>
         """, unsafe_allow_html=True)
@@ -508,7 +602,8 @@ if uploaded_files:
                 
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("Classification", label.title())
+                    fallback_text = " (LLM Fallback)" if result.get("llm_fallback") else ""
+                    st.metric("Classification", f"{label.title()}{fallback_text}")
                 with col2:
                     st.metric("Confidence", f"{confidence:.1%}")
                 with col3:
