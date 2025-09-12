@@ -10,6 +10,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import time
+import hashlib
 
 from extract_and_classify import (
     extract_text_with_pymupdf,
@@ -96,9 +97,17 @@ def get_model_and_centroids(class_examples_folder: str):
     centroids = build_class_centroids(class_examples_folder, model=model)
     return model, centroids
 
-@st.cache_data(show_spinner=True)
-def process_single_pdf(file_content: bytes, centroids: dict, model) -> dict:
-    """Cache individual PDF processing results."""
+def get_centroids_hash(centroids: dict) -> str:
+    """Generate a hash for centroids to use as cache key."""
+    centroids_str = json.dumps({k: v.tolist() for k, v in centroids.items()}, sort_keys=True)
+    return hashlib.md5(centroids_str.encode()).hexdigest()
+
+@st.cache_data(show_spinner=True, ttl=3600)  # Cache for 1 hour
+def process_single_pdf(file_content: bytes, centroids_hash: str) -> dict:
+    """Cache individual PDF processing results based on file content and centroids."""
+    # Get the model and centroids (these are cached separately)
+    model, centroids = get_model_and_centroids(examples_dir)
+    
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(file_content)
         tmp_path = tmp.name
@@ -210,7 +219,8 @@ if uploaded is not None:
         progress_bar.progress(25)
         
         # Use cached processing function
-        result = process_single_pdf(uploaded.read(), centroids, model)
+        centroids_hash = get_centroids_hash(centroids)
+        result = process_single_pdf(uploaded.read(), centroids_hash)
         fields = result.get("fields", {})
         
         status_text.text("✅ Classification complete!")
@@ -378,7 +388,8 @@ if uploaded_files:
         with st.expander(f"📄 {uploaded_file.name}", expanded=False):
             try:
                 # Use cached processing function
-                result = process_single_pdf(uploaded_file.read(), centroids, model)
+                centroids_hash = get_centroids_hash(centroids)
+                result = process_single_pdf(uploaded_file.read(), centroids_hash)
                 result["filename"] = uploaded_file.name
                 
                 batch_results.append(result)
