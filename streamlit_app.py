@@ -205,6 +205,7 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     if method and "ocr" in method.lower():
         result["method"] += "+OCR"
     result["extracted_chars"] = len(text)
+    result["extracted_text"] = text  # Include the actual extracted text
     result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
     
     # Enhance with Gemini AI if available
@@ -423,7 +424,9 @@ if uploaded is not None:
     tab1, tab2, tab3 = st.tabs(["📄 Extracted Text", "📊 Raw Data", "💾 Download"])
     
     with tab1:
-        st.text_area("Full extracted text", value=text[:100000], height=300, help="This is the text extracted from your PDF document")
+        # Get text from result or show placeholder
+        extracted_text = result.get("extracted_text", "No text available")
+        st.text_area("Full extracted text", value=extracted_text[:100000], height=300, help="This is the text extracted from your PDF document")
     
     with tab2:
         st.json(result)
