@@ -378,11 +378,7 @@ st.sidebar.info("""
 3. View analysis details
 
 **Supported Documents:**
-• Invoices
-• Bank Statements  
-• Resumes
-• ITR Forms
-• Government IDs
+• Invoices • Bank Statements • Resumes • ITR Forms • Government IDs
 """)
 
 # Main content area
