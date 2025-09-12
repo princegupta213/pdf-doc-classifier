@@ -419,9 +419,13 @@ with col2:
     
     **Features:**
     - AI-powered classification
-    - Field extraction
+    - LLM fallback for medium confidence
     - OCR fallback support
     - Confidence scoring
+    - Batch processing
+    - Multilingual support (English + Hindi)
+    - Real-time processing
+    - JSON export
     """)
 
 if uploaded is not None:
