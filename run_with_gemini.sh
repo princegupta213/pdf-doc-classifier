@@ -5,6 +5,13 @@
 
 echo "🚀 Starting PDF Document Classifier with Gemini AI..."
 
+# Check and install dependencies if needed
+echo "📦 Checking dependencies..."
+if ! python3 -c "import plotly" 2>/dev/null; then
+    echo "📥 Installing missing dependencies..."
+    pip install -r requirements.txt
+fi
+
 # Set the Gemini API key
 export GEMINI_API_KEY="AIzaSyDsziZRc_ND5qnFQ0RtqLpxcAoqjqzR6ms"
 
