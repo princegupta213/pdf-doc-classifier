@@ -24,6 +24,19 @@ from field_extraction import (
     extract_gov_id,
 )
 
+# Import LLM functionality
+try:
+    from llm_prompts import (
+        get_llm_enhanced_classification,
+        get_llm_field_extraction,
+        enhance_with_llm,
+        llm_manager
+    )
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    print("LLM prompts module not available. Install openai package for LLM features.")
+
 def _lazy_imports():
     import importlib
     modules = {}
@@ -66,20 +79,85 @@ def extract_text_with_pymupdf(path: str) -> Tuple[str, str]:
     return text, "pymupdf"
 
 
-def extract_text_with_ocr(path: str, dpi: int = 300) -> Tuple[str, str]:
-    """OCR-based extraction using pdf2image + pytesseract.
+def extract_text_with_ocr(path: str, dpi: int = 300, lang: str = 'eng') -> Tuple[str, str]:
+    """Enhanced OCR-based extraction using pdf2image + pytesseract.
 
     Returns a tuple of (text, method_name).
     """
     modules = _lazy_imports()
     pdf2image = modules["pdf2image"]
     pytesseract = modules["pytesseract"]
-    images = pdf2image.convert_from_path(path, dpi=dpi)
-    ocr_text: List[str] = []
-    for image in images:
-        ocr_text.append(pytesseract.image_to_string(image))
-    text = "\n".join(ocr_text).strip()
-    return text, "ocr"
+    
+    try:
+        # Convert PDF to images with higher quality
+        images = pdf2image.convert_from_path(
+            path, 
+            dpi=dpi,
+            first_page=None,
+            last_page=None,
+            fmt='jpeg',
+            jpegopt={'quality': 95}
+        )
+        
+        ocr_text: List[str] = []
+        ocr_config = '--oem 3 --psm 6'  # OCR Engine Mode 3, Page Segmentation Mode 6
+        
+        for i, image in enumerate(images):
+            try:
+                # Enhanced OCR with better configuration
+                page_text = pytesseract.image_to_string(
+                    image, 
+                    lang=lang,
+                    config=ocr_config
+                )
+                ocr_text.append(page_text)
+            except Exception as e:
+                print(f"OCR error on page {i+1}: {e}")
+                # Fallback to basic OCR
+                try:
+                    page_text = pytesseract.image_to_string(image)
+                    ocr_text.append(page_text)
+                except:
+                    ocr_text.append("")
+        
+        text = "\n".join(ocr_text).strip()
+        
+        # Post-process OCR text
+        text = _post_process_ocr_text(text)
+        
+        return text, "enhanced_ocr"
+        
+    except Exception as e:
+        print(f"OCR extraction failed: {e}")
+        return "", "ocr_failed"
+
+
+def _post_process_ocr_text(text: str) -> str:
+    """Post-process OCR text to improve quality."""
+    if not text:
+        return text
+    
+    # Fix common OCR errors
+    replacements = {
+        '|': 'I',  # Common OCR mistake
+        '0': 'O',  # In certain contexts
+        '5': 'S',  # In certain contexts
+        '8': 'B',  # In certain contexts
+    }
+    
+    # Apply replacements carefully (only in specific contexts)
+    for old, new in replacements.items():
+        # Only replace in specific patterns to avoid over-correction
+        if old == '|' and '|' in text:
+            # Replace | with I only when it looks like a letter
+            import re
+            text = re.sub(r'\b\|\b', 'I', text)
+    
+    # Remove excessive whitespace
+    import re
+    text = re.sub(r'\s+', ' ', text)
+    
+    return text.strip()
 
 
 _SPACE_RE = re.compile(r"\s+")
@@ -247,6 +325,24 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
         "top_scores": {k: float(v) for k, v in sorted_items[:5]},
         "method": ""
     }
+    
+    # LLM Enhancement for low confidence or unknown classifications
+    if LLM_AVAILABLE and (label == "unknown" or best_score < 0.6):
+        try:
+            llm_result = enhance_with_llm(cleaned, result)
+            if llm_result and llm_result.confidence > best_score:
+                result.update({
+                    "label": llm_result.label,
+                    "confidence": llm_result.confidence,
+                    "rationale": llm_result.rationale,
+                    "llm_enhanced": True,
+                    "llm_insights": llm_result.llm_insights,
+                    "suggested_actions": llm_result.suggested_actions
+                })
+        except Exception as e:
+            print(f"LLM enhancement failed: {e}")
+            result["llm_error"] = str(e)
+    
     return result
 
 
@@ -285,11 +381,13 @@ def extract_and_classify(pdf_path: str, class_examples_folder: str) -> Dict:
         result["rationale"] = f"{result['rationale']}; {llm_note}"
     else:
         result["rationale"] = llm_note
-    # Field extraction based on predicted label
+    # Enhanced field extraction with LLM fallback
     fields: Dict[str, str] = {}
     label = result.get("label", "unknown")
     cleaned_text = clean_text(text)
+    
     try:
+        # Traditional regex-based extraction
         if label == "invoice":
             inv = extract_invoice_number(cleaned_text)
             if inv:
@@ -309,8 +407,23 @@ def extract_and_classify(pdf_path: str, class_examples_folder: str) -> Dict:
                 fields["dob"] = dob
             if gov:
                 fields["gov_id"] = gov
-    except Exception:
-        pass
+        
+        # LLM-powered field extraction for better results
+        if LLM_AVAILABLE and label != "unknown":
+            try:
+                llm_fields = get_llm_field_extraction(cleaned_text, label)
+                if llm_fields:
+                    # Merge LLM fields with regex fields (LLM takes precedence)
+                    fields.update(llm_fields)
+                    result["llm_fields_extracted"] = True
+            except Exception as e:
+                print(f"LLM field extraction failed: {e}")
+                result["llm_field_error"] = str(e)
+                
+    except Exception as e:
+        print(f"Field extraction error: {e}")
+        result["field_extraction_error"] = str(e)
+    
     result["fields"] = fields
     return result
 

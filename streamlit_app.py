@@ -19,6 +19,13 @@ from extract_and_classify import (
     classify_text,
     _get_embedding_model,
 )
+
+# Import LLM functionality
+try:
+    from llm_prompts import llm_manager
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
 from field_extraction import (
     extract_invoice_number,
     extract_pan_number,
@@ -103,7 +110,7 @@ def get_centroids_hash(centroids: dict) -> str:
     return hashlib.md5(centroids_str.encode()).hexdigest()
 
 @st.cache_data(show_spinner=True, ttl=3600)  # Cache for 1 hour
-def process_single_pdf(file_content: bytes, centroids_hash: str) -> dict:
+def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 300, ocr_lang: str = 'eng') -> dict:
     """Cache individual PDF processing results based on file content and centroids."""
     # Get the model and centroids (these are cached separately)
     model, centroids = get_model_and_centroids(examples_dir)
@@ -113,14 +120,15 @@ def process_single_pdf(file_content: bytes, centroids_hash: str) -> dict:
         tmp_path = tmp.name
     
     try:
-        # Extract text
+        # Extract text with PyMuPDF first
         text, method = extract_text_with_pymupdf(tmp_path)
     except Exception:
         text, method = "", ""
     
+    # Enhanced OCR fallback with user settings
     if len(text.strip()) < 100:
         try:
-            text, method = extract_text_with_ocr(tmp_path)
+            text, method = extract_text_with_ocr(tmp_path, dpi=ocr_dpi, lang=ocr_lang)
         except Exception:
             pass
     
@@ -128,6 +136,7 @@ def process_single_pdf(file_content: bytes, centroids_hash: str) -> dict:
     result = classify_text(text, centroids, model=model)
     result["method"] = method
     result["extracted_chars"] = len(text)
+    result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
     
     # Cleanup
     try:
@@ -158,6 +167,36 @@ if os.path.isdir(examples_dir):
     st.sidebar.success(f"✅ Found {len(available_classes)} classes: {', '.join(available_classes)}")
 else:
     st.sidebar.error("❌ Class examples folder not found")
+
+# LLM Configuration
+st.sidebar.header("🤖 AI Features")
+
+# Check LLM availability
+if LLM_AVAILABLE:
+    llm_status = llm_manager.is_available()
+    if llm_status:
+        st.sidebar.success("✅ LLM Enhancement Available")
+        st.sidebar.info("OpenAI API key detected. LLM features enabled.")
+        
+        # LLM options
+        enable_llm_enhancement = st.sidebar.checkbox("Enable LLM Enhancement", value=True, help="Use LLM to improve low-confidence classifications")
+        enable_llm_fields = st.sidebar.checkbox("Enable LLM Field Extraction", value=True, help="Use LLM for better field extraction")
+        
+    else:
+        st.sidebar.warning("⚠️ LLM Not Available")
+        st.sidebar.info("Set OPENAI_API_KEY environment variable to enable LLM features.")
+        enable_llm_enhancement = False
+        enable_llm_fields = False
+else:
+    st.sidebar.error("❌ LLM Module Not Found")
+    st.sidebar.info("Install openai package: pip install openai")
+    enable_llm_enhancement = False
+    enable_llm_fields = False
+
+# OCR Configuration
+st.sidebar.header("📄 OCR Settings")
+ocr_dpi = st.sidebar.slider("OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower")
+ocr_language = st.sidebar.selectbox("OCR Language", ["eng", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing")
 
 # Load model and centroids
 with st.spinner("🔄 Loading AI model and building class centroids..."):
@@ -218,9 +257,9 @@ if uploaded is not None:
         status_text.text("🔄 Processing PDF...")
         progress_bar.progress(25)
         
-        # Use cached processing function
+        # Use cached processing function with OCR settings
         centroids_hash = get_centroids_hash(centroids)
-        result = process_single_pdf(uploaded.read(), centroids_hash)
+        result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, ocr_language)
         fields = result.get("fields", {})
         
         status_text.text("✅ Classification complete!")
@@ -330,8 +369,32 @@ if uploaded is not None:
         # Display fields in a nice format
         for field_name, field_value in fields.items():
             st.success(f"**{field_name.replace('_', ' ').title()}:** {field_value}")
+        
+        # Show if LLM was used for field extraction
+        if result.get("llm_fields_extracted"):
+            st.info("🤖 Fields enhanced with LLM extraction")
     else:
         st.warning("No specific fields were extracted from this document.")
+    
+    # LLM Insights section
+    if result.get("llm_enhanced") or result.get("llm_insights"):
+        st.subheader("🤖 AI Insights")
+        
+        if result.get("llm_enhanced"):
+            st.success("✨ Classification enhanced with AI")
+        
+        if result.get("llm_insights"):
+            with st.expander("View AI Analysis", expanded=False):
+                try:
+                    insights = json.loads(result["llm_insights"])
+                    st.json(insights)
+                except:
+                    st.text(result["llm_insights"])
+        
+        if result.get("suggested_actions"):
+            st.subheader("💡 Suggested Actions")
+            for action in result["suggested_actions"]:
+                st.info(f"• {action}")
 
     # Tabs for additional information
     tab1, tab2, tab3 = st.tabs(["📄 Extracted Text", "📊 Raw Data", "💾 Download"])
@@ -387,9 +450,9 @@ if uploaded_files:
         
         with st.expander(f"📄 {uploaded_file.name}", expanded=False):
             try:
-                # Use cached processing function
+                # Use cached processing function with OCR settings
                 centroids_hash = get_centroids_hash(centroids)
-                result = process_single_pdf(uploaded_file.read(), centroids_hash)
+                result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language)
                 result["filename"] = uploaded_file.name
                 
                 batch_results.append(result)
