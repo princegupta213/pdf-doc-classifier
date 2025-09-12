@@ -330,20 +330,9 @@ if 'processing_history' not in st.session_state:
 # Sidebar configuration
 st.sidebar.header("Configuration")
 
-# Class examples folder configuration
+# Class examples folder configuration (hidden from UI)
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
-examples_dir = st.sidebar.text_input("Class examples folder", value=default_examples)
-
-if not os.path.isdir(examples_dir):
-    st.sidebar.warning("Invalid folder path. Using default.")
-    examples_dir = default_examples
-
-# Display available classes
-if os.path.isdir(examples_dir):
-    available_classes = [d for d in os.listdir(examples_dir) if os.path.isdir(os.path.join(examples_dir, d))]
-    st.sidebar.success(f"Found {len(available_classes)} classes: {', '.join(available_classes)}")
-else:
-    st.sidebar.error("Class examples folder not found")
+examples_dir = default_examples
 
 # LLM Configuration
 st.sidebar.header("AI Features")
