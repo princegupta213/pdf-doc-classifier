@@ -416,76 +416,42 @@ if uploaded is not None:
         </div>
         """, unsafe_allow_html=True)
 
-    # Detailed visualizations
-    st.subheader("📊 Classification Scores")
-    
-    if top_scores:
-        # Create interactive bar chart with Plotly
-        df = pd.DataFrame(list(top_scores.items()), columns=['Class', 'Score'])
-        df['Class'] = df['Class'].str.replace('_', ' ').str.title()
-        
-        fig = px.bar(
-            df, 
-            x='Score', 
-            y='Class', 
-            orientation='h',
-            color='Score',
-            color_continuous_scale='RdYlGn',
-            title="Classification Confidence Scores"
-        )
-        fig.update_layout(
-            height=400,
-            showlegend=False,
-            yaxis={'categoryorder':'total ascending'}
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Also show as a pie chart for top 3
-        if len(top_scores) >= 3:
-            top_3 = dict(list(sorted(top_scores.items(), key=lambda x: x[1], reverse=True))[:3])
-            fig_pie = px.pie(
-                values=list(top_3.values()),
-                names=[k.replace('_', ' ').title() for k in top_3.keys()],
-                title="Top 3 Classifications"
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
+    # Skip detailed visualizations - user requested removal
 
     # Rationale and details
     st.subheader("🔍 Analysis Details")
     st.info(f"**Rationale:** {rationale}")
     
-    # Extracted fields section
-    st.subheader("📋 Extracted Fields")
-    if fields:
-        # Display fields in a nice format
-        for field_name, field_value in fields.items():
-            st.success(f"**{field_name.replace('_', ' ').title()}:** {field_value}")
-        
-        # Show if LLM was used for field extraction
-        if result.get("llm_fields_extracted"):
-            st.info("🤖 Fields enhanced with LLM extraction")
-    else:
-        st.warning("No specific fields were extracted from this document.")
+    # Extracted fields section removed - user requested removal
     
-    # AI Insights section
-    if result.get("gemini_enhanced") or result.get("gemini_insights"):
-        st.subheader("🤖 AI Insights")
-        
-        if result.get("gemini_enhanced"):
-            st.success("✨ Classification enhanced with Gemini AI")
-        
-        if result.get("gemini_insights"):
-            with st.expander("View Gemini AI Analysis", expanded=False):
-                try:
-                    insights = json.loads(result["gemini_insights"])
-                    st.json(insights)
-                except:
-                    st.text(result["gemini_insights"])
-        
-        if result.get("suggested_actions"):
-            st.subheader("💡 Suggested Actions")
-            for action in result["suggested_actions"]:
-                st.info(f"• {action}")
+    # AI Insights section - PDF Summary
+    st.subheader("🤖 AI Insights")
+    
+    # Generate PDF summary using Gemini AI
+    if gemini_model and len(text.strip()) > 50:
+        try:
+            summary_prompt = f"""
+            Please provide a concise summary of this document in 2-3 sentences. Focus on the main content and purpose of the document.
+            
+            Document text: {text[:3000]}
+            
+            Provide a clear, professional summary.
+            """
+            
+            summary_response = gemini_model.generate_content(
+                summary_prompt,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=200,
+                    temperature=0.3
+                )
+            )
+            
+            st.info(f"**Document Summary:** {summary_response.text}")
+            
+        except Exception as e:
+            st.warning(f"Could not generate AI summary: {str(e)}")
+    else:
+        st.info("AI summary not available - document text too short or Gemini AI not enabled.")
         
         if result.get("field_hints"):
             st.subheader("🔍 Field Extraction Hints")
