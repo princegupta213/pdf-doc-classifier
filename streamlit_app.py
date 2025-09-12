@@ -216,13 +216,22 @@ else:
 # LLM Configuration
 st.sidebar.header("🤖 AI Features")
 
-# Check Gemini availability
-if GEMINI_AVAILABLE and os.getenv("GEMINI_API_KEY"):
+# Check Gemini availability - support both local env and Streamlit secrets
+gemini_api_key = None
+
+# Try to get API key from Streamlit secrets first (for cloud deployment)
+try:
+    gemini_api_key = st.secrets["GEMINI_API_KEY"]
+except (KeyError, FileNotFoundError):
+    # Fallback to environment variable (for local development)
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+
+if GEMINI_AVAILABLE and gemini_api_key:
     st.sidebar.success("✅ Gemini AI Available")
     st.sidebar.info("Google Gemini API key detected. AI features enabled.")
     
     # Configure Gemini
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    genai.configure(api_key=gemini_api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
     
     # LLM options
@@ -230,7 +239,7 @@ if GEMINI_AVAILABLE and os.getenv("GEMINI_API_KEY"):
     enable_llm_fields = st.sidebar.checkbox("Enable Gemini Field Extraction", value=True, help="Use Gemini AI for better field extraction")
 else:
     st.sidebar.warning("⚠️ Gemini AI Not Available")
-    st.sidebar.info("Set GEMINI_API_KEY environment variable to enable AI features.")
+    st.sidebar.info("Set GEMINI_API_KEY in Streamlit secrets or environment variable to enable AI features.")
     enable_llm_enhancement = False
     enable_llm_fields = False
     gemini_model = None

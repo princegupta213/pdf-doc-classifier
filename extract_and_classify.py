@@ -328,7 +328,15 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
     # Gemini AI Enhancement for low confidence or unknown classifications
     if GEMINI_AVAILABLE and (label == "unknown" or best_score < 0.6):
         try:
-            api_key = os.getenv("GEMINI_API_KEY")
+            # Try to get API key from Streamlit secrets first (for cloud deployment)
+            api_key = None
+            try:
+                import streamlit as st
+                api_key = st.secrets["GEMINI_API_KEY"]
+            except (KeyError, FileNotFoundError, ImportError):
+                # Fallback to environment variable (for local development)
+                api_key = os.getenv("GEMINI_API_KEY")
+            
             if api_key:
                 genai.configure(api_key=api_key)
                 model = genai.GenerativeModel('gemini-1.5-flash')
@@ -434,7 +442,15 @@ def extract_and_classify(pdf_path: str, class_examples_folder: str) -> Dict:
         # Gemini AI-powered field extraction for better results
         if GEMINI_AVAILABLE and label != "unknown":
             try:
-                api_key = os.getenv("GEMINI_API_KEY")
+                # Try to get API key from Streamlit secrets first (for cloud deployment)
+                api_key = None
+                try:
+                    import streamlit as st
+                    api_key = st.secrets["GEMINI_API_KEY"]
+                except (KeyError, FileNotFoundError, ImportError):
+                    # Fallback to environment variable (for local development)
+                    api_key = os.getenv("GEMINI_API_KEY")
+                
                 if api_key:
                     genai.configure(api_key=api_key)
                     model = genai.GenerativeModel('gemini-1.5-flash')

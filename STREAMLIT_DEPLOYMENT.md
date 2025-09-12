@@ -26,13 +26,18 @@ Your code is ready for deployment! Here's what we've prepared:
 - **App URL**: Choose a unique URL (e.g., `pdf-doc-classifier-gemini`)
 - **Python version**: 3.9 or 3.10 (recommended)
 
-### Step 4: Add Environment Variables
-In the **"Secrets"** section, add:
+### Step 4: Add Secrets
+In the **"Secrets"** section, add your Gemini API key:
 
 ```toml
 [secrets]
 GEMINI_API_KEY = "AIzaSyDsziZRc_ND5qnFQ0RtqLpxcAoqjqzR6ms"
 ```
+
+**Important:** 
+- Replace `"AIzaSyDsziZRc_ND5qnFQ0RtqLpxcAoqjqzR6ms"` with your actual Gemini API key
+- The app will automatically detect the API key from Streamlit secrets
+- This enables all AI features in the cloud deployment
 
 ### Step 5: Deploy
 1. Click **"Deploy!"**
@@ -74,9 +79,14 @@ GEMINI_API_KEY = "AIzaSyDsziZRc_ND5qnFQ0RtqLpxcAoqjqzR6ms"
 - Ensure all dependencies are in `requirements.txt`
 
 ### Runtime Issues:
-- Verify `GEMINI_API_KEY` is set in secrets
-- Check Streamlit Cloud logs for errors
-- Ensure API key has proper permissions
+- **Gemini AI Not Available**: Verify `GEMINI_API_KEY` is set in Streamlit secrets (not environment variables)
+- **API Key Issues**: Check that the API key is valid and has proper permissions
+- **Secrets Not Working**: Ensure the secrets are in the correct format:
+  ```toml
+  [secrets]
+  GEMINI_API_KEY = "your-actual-api-key-here"
+  ```
+- Check Streamlit Cloud logs for detailed error messages
 
 ### Performance:
 - First load may take longer (model downloading)
@@ -100,3 +110,4 @@ Once deployed, your PDF Document Classifier will be:
 ---
 
 **Ready to deploy? Go to https://share.streamlit.io and follow the steps above!** 🚀
+
