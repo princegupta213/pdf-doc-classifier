@@ -253,7 +253,7 @@ def _apply_keyword_boosts(cleaned_text: str, raw_scores: Dict[str, float]) -> Di
 def _confidence_bucket(score: float) -> str:
     if score > 0.70:
         return "high"
-    if 0.45 <= score <= 0.70:
+    if 0.30 <= score <= 0.70:
         return "medium"
     return "unknown"
 
@@ -305,7 +305,7 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
     ]
 
     # Apply thresholds and tie-break
-    if best_score < 0.45:
+    if best_score < 0.30:
         label = "unknown"
         conf_bucket = "unknown"
         rationale_parts.append("below low threshold")

@@ -11,11 +11,11 @@ Classify PDFs into categories like invoice, bank statement, resume, ITR, and gov
 3. Embed: Use SentenceTransformer `all-mpnet-base-v2` to encode text.
 4. Compare: Compute cosine similarity to each class centroid (average of example embeddings).
 5. Classify: Apply keyword boosting and thresholds to choose label.
-   - Score > 0.70 → high confidence
-   - 0.45–0.70 → medium
-   - < 0.45 → unknown
+   - 
+Score > 0.70 → high confidence
+   - 0.30–0.70 → medium
+   - < 0.30 → unknown
    - If (best − second_best) < 0.10 → unknown (ambiguous)
-
 ## Project Structure
 
 ```

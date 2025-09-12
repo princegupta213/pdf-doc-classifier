@@ -208,19 +208,19 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     result["extracted_text"] = text  # Include the actual extracted text
     result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
     
-    # Enhance with Gemini AI only for medium confidence cases (0.45-0.70)
-    # High confidence (>0.70) doesn't need LLM enhancement
+    # Enhance with Gemini AI only for medium confidence cases (0.3-0.7)
+    # High confidence (>0.7) doesn't need LLM enhancement
     confidence = result.get("confidence", 0.0)
     if (enable_llm_enhancement and gemini_model and len(text.strip()) > 50 and 
-        0.45 <= confidence <= 0.70):
+        0.3 <= confidence <= 0.7):
         result = enhance_with_gemini(text, result, gemini_model)
         # Mark LLM involvement
         result["method"] += "+LLM"
         result["ai_provider"] = "Gemini"
         result["llm_reason"] = f"Medium confidence ({confidence:.2f}) - using LLM for enhancement"
-    elif confidence > 0.70:
+    elif confidence > 0.7:
         result["llm_reason"] = f"High confidence ({confidence:.2f}) - LLM not needed"
-    elif confidence < 0.45:
+    elif confidence < 0.3:
         result["llm_reason"] = f"Low confidence ({confidence:.2f}) - LLM not used (unknown classification)"
     
     # Cleanup
@@ -384,7 +384,7 @@ if uploaded is not None:
     
     with col1:
         # Badge color by confidence bucket
-        if label == "unknown" or confidence < 0.45:
+        if label == "unknown" or confidence < 0.30:
             color = "#dc3545"
             conf_class = "confidence-low"
         elif confidence <= 0.70:
