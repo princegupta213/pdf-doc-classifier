@@ -327,6 +327,15 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
 if 'processing_history' not in st.session_state:
     st.session_state.processing_history = []
 
+# Help section - moved to top
+st.sidebar.header("How to Use")
+st.sidebar.info("""
+**Quick Start:**
+1. Upload a PDF file
+2. Get instant classification
+3. View analysis details
+""")
+
 # Sidebar configuration
 st.sidebar.header("Configuration")
 
@@ -373,17 +382,6 @@ ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin"], h
 with st.spinner("Loading AI model and building class centroids..."):
     model, centroids = get_model_and_centroids(examples_dir)
 
-# Help section
-st.sidebar.header("How to Use")
-st.sidebar.info("""
-**Quick Start:**
-1. Upload a PDF file
-2. Get instant classification
-3. View analysis details
-
-**Supported Documents:**
-• Invoices • Bank Statements • Resumes • ITR Forms • Government IDs
-""")
 
 # Main content area
 col1, col2 = st.columns([2, 1])
