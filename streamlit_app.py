@@ -394,6 +394,10 @@ with col1:
         help="Upload a PDF document to classify it automatically"
     )
     
+    
+    
+    
+    
     # Batch processing section - moved here
     st.header("Batch Processing")
     st.write("Upload multiple PDFs for batch classification")
