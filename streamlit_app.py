@@ -132,8 +132,8 @@ st.markdown("""
 # Header
 st.markdown("""
 <div class="main-header">
-    <h1>📄 PDF Document Classifier / PDF दस्तावेज़ वर्गीकरणकर्ता</h1>
-    <p>Upload PDFs to automatically classify them into categories like invoice, bank statement, resume, ITR, or government ID / PDF अपलोड करें और उन्हें चालान, बैंक स्टेटमेंट, रिज्यूम, ITR, या सरकारी ID जैसी श्रेणियों में स्वचालित रूप से वर्गीकृत करें</p>
+    <h1>📄 PDF Document Classifier</h1>
+    <p>Upload PDFs to automatically classify them into categories like invoice, bank statement, resume, ITR, or government ID</p>
 </div>
 """, unsafe_allow_html=True)
 
