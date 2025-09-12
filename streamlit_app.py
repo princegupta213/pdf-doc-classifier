@@ -418,15 +418,6 @@ if uploaded is not None:
     # Extracted fields section removed - user requested removal
     
     # AI Insights section removed - user requested removal
-        
-        if result.get("field_hints"):
-            st.subheader("🔍 Field Extraction Hints")
-            for field, hint in result["field_hints"].items():
-                st.info(f"**{field.replace('_', ' ').title()}:** {hint}")
-        
-        if result.get("llm_error"):
-            st.warning(f"⚠️ LLM Error: {result['llm_error']}")
-            st.info("💡 Alternative AI heuristics were used instead.")
 
     # Tabs for additional information
     tab1, tab2, tab3 = st.tabs(["📄 Extracted Text", "📊 Raw Data", "💾 Download"])
