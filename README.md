@@ -1,6 +1,8 @@
-# PDF Document Classifier
+# PDF Document Classifier / PDF दस्तावेज़ वर्गीकरणकर्ता
 
 Classify PDFs into categories like invoice, bank statement, resume, ITR, and government_id using text extraction, cleaning, sentence embeddings, and cosine similarity with keyword boosting.
+
+**भाषा समर्थन / Language Support:** English + Hindi (English + हिंदी)
 
 ## Approach
 
@@ -21,7 +23,9 @@ pdf_doc_classifier/
 ├─ extract_and_classify.py       # Core extraction + classification
 ├─ app_demo.py                   # CLI tool to classify a PDF
 ├─ streamlit_app.py              # Web UI for uploads and visualization
-├─ evaluate.py                   # Evaluate PDFs under tests/<class>/
+├─ field_extraction.py           # Field extraction utilities
+├─ llm_prompts.py                # LLM functionality
+├─ alternative_llm.py            # Alternative LLM implementation
 ├─ requirements.txt              # Python dependencies
 ├─ README.md                     # This file
 ├─ class_examples/
@@ -30,19 +34,15 @@ pdf_doc_classifier/
 │  ├─ resume/*.txt
 │  ├─ ITR/*.txt
 │  └─ government_id/*.txt
-└─ tests/
-   ├─ invoice/*.pdf
-   ├─ bank_statement/*.pdf
-   ├─ resume/*.pdf
-   ├─ ITR/*.pdf
-   └─ government_id/*.pdf
+└─ run_app.py                    # Application launcher
 ```
 
 ## Setup
 
 1. System dependencies (for OCR path):
-   - macOS (Homebrew): `brew install tesseract poppler`
-   - Linux: `sudo apt-get install tesseract-ocr poppler-utils`
+   - macOS (Homebrew): `brew install tesseract poppler tesseract-lang`
+   - Linux: `sudo apt-get install tesseract-ocr poppler-utils tesseract-ocr-hin`
+   - For Hindi support: Install Hindi language pack for Tesseract
 2. Python environment:
 
 ```bash
@@ -50,6 +50,21 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+## Language Support / भाषा समर्थन
+
+The application supports both English and Hindi:
+- **OCR Processing**: English + Hindi (`eng+hin`) by default
+- **UI Interface**: Bilingual display (English / हिंदी)
+- **Document Classification**: Works with documents in both languages
+
+### OCR Language Options:
+- `eng+hin` - English + Hindi (Default)
+- `eng` - English only
+- `hin` - Hindi only
+- `eng+fra` - English + French
+- `eng+spa` - English + Spanish
+- `eng+deu` - English + German
 
 ## Run Instructions
 
@@ -65,29 +80,41 @@ python app_demo.py --file samples/sample.pdf
 streamlit run streamlit_app.py
 ```
 
-- Evaluation (place PDFs in `tests/<class>/`):
+- Run with launcher script:
 
 ```bash
-python evaluate.py
+python run_app.py
+```
+
+## AI Integration / AI एकीकरण
+
+### Google Gemini AI (Free)
+- **Free tier**: 15 requests/minute, 1M tokens/day
+- **High quality**: Google's latest AI model
+- **Bilingual support**: Works great with English + Hindi documents
+- **Setup**: Set `GEMINI_API_KEY` environment variable
+- **Get API key**: https://makersuite.google.com/app/apikey
+
+### Setup Gemini AI
+```bash
+# Get your API key from: https://makersuite.google.com/app/apikey
+export GEMINI_API_KEY="your-gemini-api-key-here"
+
+# Install dependencies
+pip install google-generativeai
+
+# Run the app
+streamlit run streamlit_app.py
 ```
 
 ## Deployment
 
-- Local Docker Run:
-
-```
-docker build -t doc-classifier .
-docker run -p 8501:8501 doc-classifier
-```
-
-Open http://localhost:8501
-
-- Render Deployment:
+- Streamlit Cloud (Recommended):
   - Push repo to GitHub
-  - Create a new Web Service on Render
-  - Select Docker as environment
-  - Expose port 8501
-  - Add environment variable `OPENAI_API_KEY` in Render dashboard if LLM fallback is enabled
+  - Visit [share.streamlit.io](https://share.streamlit.io)
+  - Deploy directly from GitHub repository
+  - Add environment variable in Streamlit Cloud secrets:
+    - `GEMINI_API_KEY` (for Google Gemini AI)
 
 - Heroku Deployment:
   - `heroku login`

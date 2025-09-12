@@ -25,17 +25,13 @@ from field_extraction import (
 )
 
 # Import LLM functionality
+# Gemini AI integration
 try:
-    from llm_prompts import (
-        get_llm_enhanced_classification,
-        get_llm_field_extraction,
-        enhance_with_llm,
-        llm_manager
-    )
-    LLM_AVAILABLE = True
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
 except ImportError:
-    LLM_AVAILABLE = False
-    print("LLM prompts module not available. Install openai package for LLM features.")
+    GEMINI_AVAILABLE = False
+    print("Google Generative AI not available. Install google-generativeai package for AI features.")
 
 # Import alternative LLM functionality
 try:
@@ -86,7 +82,7 @@ def extract_text_with_pymupdf(path: str) -> Tuple[str, str]:
     return text, "pymupdf"
 
 
-def extract_text_with_ocr(path: str, dpi: int = 300, lang: str = 'eng') -> Tuple[str, str]:
+def extract_text_with_ocr(path: str, dpi: int = 300, lang: str = 'eng+hin') -> Tuple[str, str]:
     """Enhanced OCR-based extraction using pdf2image + pytesseract.
 
     Returns a tuple of (text, method_name).
@@ -333,36 +329,46 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
         "method": ""
     }
     
-    # LLM Enhancement for low confidence or unknown classifications
-    if LLM_AVAILABLE and (label == "unknown" or best_score < 0.6):
+    # Gemini AI Enhancement for low confidence or unknown classifications
+    if GEMINI_AVAILABLE and (label == "unknown" or best_score < 0.6):
         try:
-            llm_result = enhance_with_llm(cleaned, result)
-            if llm_result and llm_result.confidence > best_score:
+            api_key = os.getenv("GEMINI_API_KEY")
+            if api_key:
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel('gemini-1.5-flash')
+                
+                prompt = f"""
+                Analyze this document text and provide classification insights:
+                
+                Text: {cleaned[:2000]}
+                
+                Current classification: {result}
+                
+                Provide:
+                1. Document type confirmation
+                2. Key fields that could be extracted
+                3. Confidence assessment
+                4. Any additional insights
+                
+                Respond in a concise format.
+                """
+                
+                response = model.generate_content(
+                    prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        max_output_tokens=300,
+                        temperature=0.1
+                    )
+                )
+                
                 result.update({
-                    "label": llm_result.label,
-                    "confidence": llm_result.confidence,
-                    "rationale": llm_result.rationale,
-                    "llm_enhanced": True,
-                    "llm_insights": llm_result.llm_insights,
-                    "suggested_actions": llm_result.suggested_actions
+                    "gemini_enhanced": True,
+                    "gemini_insights": response.text,
+                    "ai_provider": "Gemini"
                 })
         except Exception as e:
-            print(f"LLM enhancement failed: {e}")
-            result["llm_error"] = str(e)
-            
-            # Try alternative LLM enhancement
-            if ALTERNATIVE_LLM_AVAILABLE:
-                try:
-                    alt_result = get_enhanced_classification_without_llm(cleaned, result)
-                    if alt_result:
-                        result.update({
-                            "alternative_enhanced": True,
-                            "enhanced_heuristics": alt_result.get("enhanced_heuristics", False),
-                            "suggested_actions": alt_result.get("suggestions", []),
-                            "field_hints": alt_result.get("field_hints", {})
-                        })
-                except Exception as alt_e:
-                    print(f"Alternative LLM enhancement failed: {alt_e}")
+            print(f"Gemini enhancement failed: {e}")
+            result["gemini_error"] = str(e)
     
     return result
 
@@ -429,16 +435,44 @@ def extract_and_classify(pdf_path: str, class_examples_folder: str) -> Dict:
             if gov:
                 fields["gov_id"] = gov
         
-        # LLM-powered field extraction for better results
-        if LLM_AVAILABLE and label != "unknown":
+        # Gemini AI-powered field extraction for better results
+        if GEMINI_AVAILABLE and label != "unknown":
             try:
-                llm_fields = get_llm_field_extraction(cleaned_text, label)
-                if llm_fields:
-                    # Merge LLM fields with regex fields (LLM takes precedence)
-                    fields.update(llm_fields)
-                    result["llm_fields_extracted"] = True
+                api_key = os.getenv("GEMINI_API_KEY")
+                if api_key:
+                    genai.configure(api_key=api_key)
+                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    
+                    prompt = f"""
+                    Extract key fields from this {label} document:
+                    
+                    Text: {cleaned_text[:1500]}
+                    
+                    Extract relevant fields like amounts, dates, numbers, names, etc.
+                    Return as JSON format.
+                    """
+                    
+                    response = model.generate_content(
+                        prompt,
+                        generation_config=genai.types.GenerationConfig(
+                            max_output_tokens=200,
+                            temperature=0.1
+                        )
+                    )
+                    
+                    # Try to parse JSON response
+                    try:
+                        import json
+                        gemini_fields = json.loads(response.text)
+                        if isinstance(gemini_fields, dict):
+                            fields.update(gemini_fields)
+                            result["gemini_fields_extracted"] = True
+                    except:
+                        # If not JSON, add as text insight
+                        result["gemini_field_insights"] = response.text
+                        
             except Exception as e:
-                print(f"LLM field extraction failed: {e}")
+                print(f"Gemini field extraction failed: {e}")
                 result["llm_field_error"] = str(e)
                 
     except Exception as e:

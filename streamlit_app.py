@@ -20,12 +20,12 @@ from extract_and_classify import (
     _get_embedding_model,
 )
 
-# Import LLM functionality
+# Import Gemini LLM functionality
 try:
-    from llm_prompts import llm_manager
-    LLM_AVAILABLE = True
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
 except ImportError:
-    LLM_AVAILABLE = False
+    GEMINI_AVAILABLE = False
 from field_extraction import (
     extract_invoice_number,
     extract_pan_number,
@@ -36,7 +36,7 @@ from field_extraction import (
 
 # Page configuration
 st.set_page_config(
-    page_title="PDF Document Classifier", 
+    page_title="PDF Document Classifier / PDF दस्तावेज़ वर्गीकरणकर्ता", 
     page_icon="📄", 
     layout="wide",
     initial_sidebar_state="expanded"
@@ -51,6 +51,47 @@ def get_cloud_info():
         "version": "2.0",
         "features": ["batch_processing", "advanced_visualizations", "caching"]
     }
+
+def enhance_with_gemini(text: str, classification: dict, model) -> dict:
+    """Enhance classification using Gemini AI."""
+    if not model or not text.strip():
+        return classification
+    
+    try:
+        prompt = f"""
+        Analyze this document text and provide classification insights:
+        
+        Text: {text[:2000]}
+        
+        Current classification: {classification}
+        
+        Provide:
+        1. Document type confirmation
+        2. Key fields that could be extracted
+        3. Confidence assessment
+        4. Any additional insights
+        
+        Respond in a concise format.
+        """
+        
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                max_output_tokens=300,
+                temperature=0.1
+            )
+        )
+        
+        enhanced = classification.copy()
+        enhanced["gemini_enhanced"] = True
+        enhanced["gemini_insights"] = response.text
+        enhanced["ai_provider"] = "Gemini"
+        
+        return enhanced
+        
+    except Exception as e:
+        print(f"Gemini enhancement failed: {e}")
+        return classification
 
 # Custom CSS for better styling
 st.markdown("""
@@ -91,8 +132,8 @@ st.markdown("""
 # Header
 st.markdown("""
 <div class="main-header">
-    <h1>📄 PDF Document Classifier</h1>
-    <p>Upload PDFs to automatically classify them into categories like invoice, bank statement, resume, ITR, or government ID</p>
+    <h1>📄 PDF Document Classifier / PDF दस्तावेज़ वर्गीकरणकर्ता</h1>
+    <p>Upload PDFs to automatically classify them into categories like invoice, bank statement, resume, ITR, or government ID / PDF अपलोड करें और उन्हें चालान, बैंक स्टेटमेंट, रिज्यूम, ITR, या सरकारी ID जैसी श्रेणियों में स्वचालित रूप से वर्गीकृत करें</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -110,7 +151,7 @@ def get_centroids_hash(centroids: dict) -> str:
     return hashlib.md5(centroids_str.encode()).hexdigest()
 
 @st.cache_data(show_spinner=True, ttl=3600)  # Cache for 1 hour
-def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 300, ocr_lang: str = 'eng') -> dict:
+def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 300, ocr_lang: str = 'eng+hin') -> dict:
     """Cache individual PDF processing results based on file content and centroids."""
     # Get the model and centroids (these are cached separately)
     model, centroids = get_model_and_centroids(examples_dir)
@@ -138,6 +179,10 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     result["extracted_chars"] = len(text)
     result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
     
+    # Enhance with Gemini AI if available
+    if enable_llm_enhancement and gemini_model and len(text.strip()) > 50:
+        result = enhance_with_gemini(text, result, gemini_model)
+    
     # Cleanup
     try:
         os.unlink(tmp_path)
@@ -151,7 +196,7 @@ if 'processing_history' not in st.session_state:
     st.session_state.processing_history = []
 
 # Sidebar configuration
-st.sidebar.header("⚙️ Configuration")
+st.sidebar.header("⚙️ Configuration / कॉन्फ़िगरेशन")
 
 # Class examples folder configuration
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
@@ -171,35 +216,32 @@ else:
 # LLM Configuration
 st.sidebar.header("🤖 AI Features")
 
-# Check LLM availability
-if LLM_AVAILABLE:
-    llm_status = llm_manager.is_available()
-    if llm_status:
-        st.sidebar.success("✅ LLM Enhancement Available")
-        st.sidebar.info("OpenAI API key detected. LLM features enabled.")
-        
-        # LLM options
-        enable_llm_enhancement = st.sidebar.checkbox("Enable LLM Enhancement", value=True, help="Use LLM to improve low-confidence classifications")
-        enable_llm_fields = st.sidebar.checkbox("Enable LLM Field Extraction", value=True, help="Use LLM for better field extraction")
-        
-    else:
-        st.sidebar.warning("⚠️ LLM Not Available")
-        st.sidebar.info("Set OPENAI_API_KEY environment variable to enable LLM features.")
-        enable_llm_enhancement = False
-        enable_llm_fields = False
+# Check Gemini availability
+if GEMINI_AVAILABLE and os.getenv("GEMINI_API_KEY"):
+    st.sidebar.success("✅ Gemini AI Available")
+    st.sidebar.info("Google Gemini API key detected. AI features enabled.")
+    
+    # Configure Gemini
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    # LLM options
+    enable_llm_enhancement = st.sidebar.checkbox("Enable Gemini AI Enhancement", value=True, help="Use Gemini AI to improve classifications")
+    enable_llm_fields = st.sidebar.checkbox("Enable Gemini Field Extraction", value=True, help="Use Gemini AI for better field extraction")
 else:
-    st.sidebar.error("❌ LLM Module Not Found")
-    st.sidebar.info("Install openai package: pip install openai")
+    st.sidebar.warning("⚠️ Gemini AI Not Available")
+    st.sidebar.info("Set GEMINI_API_KEY environment variable to enable AI features.")
     enable_llm_enhancement = False
     enable_llm_fields = False
+    gemini_model = None
 
 # OCR Configuration
-st.sidebar.header("📄 OCR Settings")
-ocr_dpi = st.sidebar.slider("OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower")
-ocr_language = st.sidebar.selectbox("OCR Language", ["eng", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing")
+st.sidebar.header("📄 OCR Settings / OCR सेटिंग्स")
+ocr_dpi = st.sidebar.slider("OCR DPI / OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower / उच्च DPI = बेहतर गुणवत्ता लेकिन धीमा")
+ocr_language = st.sidebar.selectbox("OCR Language / OCR भाषा", ["eng+hin", "eng", "hin", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing / OCR प्रसंस्करण के लिए भाषा")
 
 # Load model and centroids
-with st.spinner("🔄 Loading AI model and building class centroids..."):
+with st.spinner("🔄 Loading AI model and building class centroids... / AI मॉडल लोड कर रहे हैं और क्लास सेंट्रोइड्स बना रहे हैं..."):
     model, centroids = get_model_and_centroids(examples_dir)
 
 # Sidebar stats
@@ -224,11 +266,11 @@ if st.session_state.processing_history:
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.header("📤 Upload PDF Document")
+    st.header("📤 Upload PDF Document / PDF दस्तावेज़ अपलोड करें")
     uploaded = st.file_uploader(
-        "Choose a PDF file", 
+        "Choose a PDF file / PDF फ़ाइल चुनें", 
         type=["pdf"],
-        help="Upload a PDF document to classify it automatically"
+        help="Upload a PDF document to classify it automatically / दस्तावेज़ को स्वचालित रूप से वर्गीकृत करने के लिए PDF अपलोड करें"
     )
 
 with col2:
@@ -376,22 +418,20 @@ if uploaded is not None:
     else:
         st.warning("No specific fields were extracted from this document.")
     
-    # LLM Insights section
-    if result.get("llm_enhanced") or result.get("llm_insights") or result.get("alternative_enhanced"):
+    # AI Insights section
+    if result.get("gemini_enhanced") or result.get("gemini_insights"):
         st.subheader("🤖 AI Insights")
         
-        if result.get("llm_enhanced"):
-            st.success("✨ Classification enhanced with OpenAI AI")
-        elif result.get("alternative_enhanced"):
-            st.info("🔧 Classification enhanced with alternative AI heuristics")
+        if result.get("gemini_enhanced"):
+            st.success("✨ Classification enhanced with Gemini AI")
         
-        if result.get("llm_insights"):
-            with st.expander("View AI Analysis", expanded=False):
+        if result.get("gemini_insights"):
+            with st.expander("View Gemini AI Analysis", expanded=False):
                 try:
-                    insights = json.loads(result["llm_insights"])
+                    insights = json.loads(result["gemini_insights"])
                     st.json(insights)
                 except:
-                    st.text(result["llm_insights"])
+                    st.text(result["gemini_insights"])
         
         if result.get("suggested_actions"):
             st.subheader("💡 Suggested Actions")
@@ -432,14 +472,14 @@ if uploaded is not None:
         pass
 
 # Batch processing section
-st.header("📁 Batch Processing")
-st.write("Upload multiple PDFs for batch classification")
+st.header("📁 Batch Processing / बैच प्रसंस्करण")
+st.write("Upload multiple PDFs for batch classification / बैच वर्गीकरण के लिए कई PDF अपलोड करें")
 
 uploaded_files = st.file_uploader(
-    "Choose multiple PDF files", 
+    "Choose multiple PDF files / कई PDF फ़ाइलें चुनें", 
     type=["pdf"],
     accept_multiple_files=True,
-    help="Select multiple PDF files to process them all at once"
+    help="Select multiple PDF files to process them all at once / सभी को एक साथ प्रसंस्करण के लिए कई PDF फ़ाइलें चुनें"
 )
 
 if uploaded_files:
