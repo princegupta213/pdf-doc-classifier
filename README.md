@@ -15,7 +15,7 @@ Classify PDFs into categories like invoice, bank statement, resume, ITR, and gov
 Score > 0.70 → high confidence
    - 0.30–0.70 → medium
    - < 0.30 → unknown
-   - If (best − second_best) < 0.05 → unknown (ambiguous)
+   - If (best − second_best) < 0.10 → unknown (ambiguous)
 ## Project Structure
 
 ```

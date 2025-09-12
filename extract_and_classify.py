@@ -221,26 +221,59 @@ def build_class_centroids(class_examples_folder: str, model=None) -> Dict[str, n
 
 def _keyword_boosts() -> Dict[str, List[str]]:
     return {
-        "invoice": ["invoice", "total due", "subtotal", "bill to", "invoice #", "gst", "vat"],
-        "bank_statement": ["account statement", "transaction", "debit", "credit", "balance", "ifsc", "swift", "account number"],
-        "resume": ["resume", "curriculum vitae", "experience", "education", "skills", "projects", "summary"],
-        "ITR": ["income tax return", "itr", "pan", "assessment year", "tax paid", "gross total income"],
-        "government_id": ["government id", "id card", "issuing authority", "dob", "date of birth", "aadhaar", "passport", "driver", "voter"]
+        "invoice": [
+            "invoice", "total due", "subtotal", "bill to", "invoice #", "gst", "vat", "tax invoice",
+            "commercial invoice", "proforma", "receipt", "amount due", "payment terms", "net 30",
+            "bill no", "taxable amount", "cgst", "sgst", "igst", "service bill", "retail invoice"
+        ],
+        "bank_statement": [
+            "account statement", "transaction", "debit", "credit", "balance", "ifsc", "swift", "account number",
+            "bank statement", "monthly statement", "transaction history", "closing balance", "opening balance",
+            "neft", "rtgs", "imps", "upi", "atm", "cheque", "deposit", "withdrawal", "interest", "charges"
+        ],
+        "resume": [
+            "resume", "curriculum vitae", "experience", "education", "skills", "projects", "summary",
+            "cv", "bio-data", "professional experience", "work experience", "career objective",
+            "technical skills", "achievements", "certifications", "internship", "training",
+            "leadership", "extracurricular", "publications", "awards", "contact information"
+        ],
+        "ITR": [
+            "income tax return", "itr", "pan", "assessment year", "tax paid", "gross total income",
+            "taxable income", "deductions", "refund", "tds", "advance tax", "self assessment",
+            "form itr", "ay 20", "80c", "80d", "80g", "hra", "lta", "medical", "donation"
+        ],
+        "government_id": [
+            "government id", "id card", "issuing authority", "dob", "date of birth", "aadhaar", "passport", "driver", "voter",
+            "government of india", "unique identification", "uidai", "driving license", "voter id", "pan card",
+            "passport no", "license no", "epic", "valid until", "issued by", "father's name", "mother's name"
+        ]
     }
 
 
 def _apply_keyword_boosts(cleaned_text: str, raw_scores: Dict[str, float]) -> Dict[str, float]:
     boosts = _keyword_boosts()
     boosted = dict(raw_scores)
+    text_lower = cleaned_text.lower()
+    
     for cls, words in boosts.items():
         count = 0
         for w in words:
-            if w in cleaned_text:
+            if w.lower() in text_lower:
                 count += 1
+        
         if count > 0:
-            # Scale boost modestly to avoid overpowering embeddings
-            boost = min(0.05 * count, 0.15)
+            # Progressive boosting based on number of keyword matches
+            if count >= 4:
+                boost = 0.20  # Strong boost for 4+ matches
+            elif count >= 3:
+                boost = 0.15  # Good boost for 3 matches
+            elif count >= 2:
+                boost = 0.10  # Medium boost for 2 matches
+            else:
+                boost = 0.05  # Small boost for 1 match
+            
             boosted[cls] = min(1.0, boosted.get(cls, 0.0) + boost)
+    
     return boosted
 
 
@@ -298,15 +331,26 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
         f"second={second_score:.3f}",
     ]
 
-    # Apply thresholds and tie-break
+    # Apply thresholds and tie-break with smart confidence adjustment
     if best_score < 0.30:
         label = "unknown"
         conf_bucket = "unknown"
         rationale_parts.append("below low threshold")
-    elif (best_score - second_score) < 0.05:
-        label = "unknown"
-        conf_bucket = "unknown"
-        rationale_parts.append("ambiguous: margin < 0.05")
+    elif (best_score - second_score) < 0.10:
+        # Check if the best match has strong keyword indicators
+        keyword_boosts = _keyword_boosts()
+        best_keywords = keyword_boosts.get(best_label, [])
+        keyword_matches = sum(1 for kw in best_keywords if kw.lower() in cleaned_text.lower())
+        
+        if keyword_matches >= 3:  # Strong keyword evidence
+            # Override ambiguous classification for strong keyword matches
+            label = best_label
+            conf_bucket = _confidence_bucket(best_score)
+            rationale_parts.append(f"strong keywords ({keyword_matches} matches) override ambiguity")
+        else:
+            label = "unknown"
+            conf_bucket = "unknown"
+            rationale_parts.append("ambiguous: margin < 0.10")
     else:
         label = best_label
         conf_bucket = _confidence_bucket(best_score)

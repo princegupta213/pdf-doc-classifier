@@ -95,18 +95,25 @@ def enhance_with_gemini_fallback(text: str, result: Dict, model) -> Dict:
         confidence = result.get("confidence", 0.0)
         
         prompt = f"""
-        This document was classified as "unknown" but has a confidence score of {confidence:.2f}, suggesting it might be classifiable.
-        
+        You are a document classification expert. This document was initially classified as "unknown" but has a confidence score of {confidence:.2f}, suggesting it might be classifiable.
+
         Document text: {text[:2000]}
-        
+
         Please analyze this document and determine what type it is. Choose from these categories:
-        - invoice: Bills, receipts, payment requests
-        - bank_statement: Bank account statements, transaction records
-        - resume: CV, job applications, professional profiles
-        - ITR: Income tax returns, tax documents
-        - government_id: Passport, driver's license, national ID, etc.
+        - invoice: Bills, receipts, payment requests, commercial invoices, tax invoices, service bills, proforma invoices
+        - bank_statement: Bank account statements, transaction records, monthly statements, credit card statements
+        - resume: CV, job applications, professional profiles, curriculum vitae, bio-data, career summaries
+        - ITR: Income tax returns, tax documents, assessment forms, tax filing documents
+        - government_id: Passport, driver's license, national ID, Aadhaar, voter ID, PAN card, government issued documents
         - unknown: If truly unclassifiable
-        
+
+        Look for key indicators:
+        - Invoice: "invoice", "bill", "total due", "payment terms", "GST", "amount", "subtotal"
+        - Bank Statement: "account", "transaction", "debit", "credit", "balance", "statement", "bank"
+        - Resume: "experience", "education", "skills", "projects", "career", "professional", "work"
+        - ITR: "income tax", "PAN", "assessment year", "tax paid", "deductions", "ITR"
+        - Government ID: "government", "ID card", "issued by", "date of birth", "passport", "license"
+
         Respond with:
         1. Document type (one of the categories above)
         2. Confidence level (0.0 to 1.0)
@@ -283,7 +290,8 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     should_use_llm = (
         enable_llm_enhancement and gemini_model and len(text.strip()) > 50 and (
             (0.3 <= confidence <= 0.7) or  # Medium confidence range
-            (label == "unknown" and confidence >= 0.3)  # Unknown but medium/high confidence fallback
+            (label == "unknown" and confidence >= 0.3) or  # Unknown but medium/high confidence fallback
+            (label == "unknown" and "ambiguous" in result.get("rationale", ""))  # Ambiguous cases with good confidence
         )
     )
     
