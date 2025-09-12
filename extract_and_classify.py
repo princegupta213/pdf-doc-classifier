@@ -303,10 +303,10 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
         label = "unknown"
         conf_bucket = "unknown"
         rationale_parts.append("below low threshold")
-    elif (best_score - second_score) < 0.10:
+    elif (best_score - second_score) < 0.05:
         label = "unknown"
         conf_bucket = "unknown"
-        rationale_parts.append("ambiguous: margin < 0.10")
+        rationale_parts.append("ambiguous: margin < 0.05")
     else:
         label = best_label
         conf_bucket = _confidence_bucket(best_score)
