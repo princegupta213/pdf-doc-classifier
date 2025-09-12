@@ -359,7 +359,7 @@ except (KeyError, FileNotFoundError):
     gemini_api_key = os.getenv("GEMINI_API_KEY")
 
 if GEMINI_AVAILABLE and gemini_api_key:
-    st.sidebar.success("AI Powered")
+    st.sidebar.success("AI Powered LLM Fallback")
     # Configure Gemini
     genai.configure(api_key=gemini_api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
