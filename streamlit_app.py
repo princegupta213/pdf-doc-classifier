@@ -152,7 +152,7 @@ def get_centroids_hash(centroids: dict) -> str:
 
 @st.cache_data(show_spinner=True, ttl=3600)  # Cache for 1 hour
 def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 300, ocr_lang: str = 'eng+hin') -> dict:
-    """Cache individual PDF processing results based on file content and centroids."""
+    """Cache individual PDF processing  based on file content and centroids."""
     # Get the model and centroids (these are cached separately)
     model, centroids = get_model_and_centroids(examples_dir)
     
@@ -175,13 +175,18 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     
     # Classify
     result = classify_text(text, centroids, model=model)
-    result["method"] = method
+    result["method"] = "embedding"
+    if method and "ocr" in method.lower():
+        result["method"] += "+OCR"
     result["extracted_chars"] = len(text)
     result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
     
     # Enhance with Gemini AI if available
     if enable_llm_enhancement and gemini_model and len(text.strip()) > 50:
         result = enhance_with_gemini(text, result, gemini_model)
+        # Mark LLM involvement
+        result["method"] += "+LLM"
+        result["ai_provider"] = "Gemini"
     
     # Cleanup
     try:
