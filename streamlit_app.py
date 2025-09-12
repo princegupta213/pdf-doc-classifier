@@ -27,13 +27,7 @@ try:
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
-from field_extraction import (
-    extract_invoice_number,
-    extract_pan_number,
-    extract_account_number,
-    extract_dob,
-    extract_gov_id,
-)
+# Field extraction removed - not used in current version
 
 # Page configuration
 st.set_page_config(
@@ -362,11 +356,11 @@ if GEMINI_AVAILABLE and gemini_api_key:
     genai.configure(api_key=gemini_api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
     enable_llm_enhancement = True
-    enable_llm_fields = True
+    # enable_llm_fields removed - not used in current version
 else:
     st.sidebar.warning("AI Not Available")
     enable_llm_enhancement = False
-    enable_llm_fields = False
+    # enable_llm_fields removed - not used in current version
     gemini_model = None
 
 # OCR Configuration
@@ -434,7 +428,7 @@ if uploaded is not None:
         # Use cached processing function with OCR settings
         centroids_hash = get_centroids_hash(centroids)
         result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, ocr_language)
-        fields = result.get("fields", {})
+        # fields extraction removed - not used in current version
         
         status_text.text("Classification complete!")
         progress_bar.progress(100)
