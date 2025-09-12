@@ -172,20 +172,20 @@ st.markdown("""
 <style>
     .main-header {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 10px;
-        margin-bottom: 2rem;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
         text-align: center;
     }
     .main-header h1 {
         color: white;
         margin: 0;
-        font-size: 2.5rem;
+        font-size: 1.8rem;
     }
     .main-header p {
         color: #f0f0f0;
-        margin: 0.5rem 0 0 0;
-        font-size: 1.1rem;
+        margin: 0.3rem 0 0 0;
+        font-size: 0.9rem;
     }
     .metric-card {
         background: white;
@@ -233,7 +233,7 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <h1>PDF Document Classifier</h1>
-    <p>Upload PDFs to automatically classify them into categories like invoice, bank statement, resume, ITR, or government ID</p>
+    <p>AI-powered document classification for invoices, bank statements, resumes, ITR, and government IDs</p>
 </div>
 """, unsafe_allow_html=True)
 
