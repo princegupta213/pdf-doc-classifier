@@ -16,13 +16,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 
-from field_extraction import (
-    extract_invoice_number,
-    extract_pan_number,
-    extract_account_number,
-    extract_dob,
-    extract_gov_id,
-)
+# Field extraction removed - not used in current version
 
 # Import LLM functionality
 # Gemini AI integration
@@ -412,86 +406,8 @@ def extract_and_classify(pdf_path: str, class_examples_folder: str) -> Dict:
         result["rationale"] = f"{result['rationale']}; {llm_note}"
     else:
         result["rationale"] = llm_note
-    # Enhanced field extraction with LLM fallback
-    fields: Dict[str, str] = {}
-    label = result.get("label", "unknown")
-    cleaned_text = clean_text(text)
-    
-    try:
-        # Traditional regex-based extraction
-        if label == "invoice":
-            inv = extract_invoice_number(cleaned_text)
-            if inv:
-                fields["invoice_number"] = inv
-        elif label == "ITR":
-            pan = extract_pan_number(cleaned_text)
-            if pan:
-                fields["pan"] = pan
-        elif label == "bank_statement":
-            acc = extract_account_number(cleaned_text)
-            if acc:
-                fields["account_number"] = acc
-        elif label == "government_id":
-            dob = extract_dob(cleaned_text)
-            gov = extract_gov_id(cleaned_text)
-            if dob:
-                fields["dob"] = dob
-            if gov:
-                fields["gov_id"] = gov
-        
-        # Gemini AI-powered field extraction for better results
-        if GEMINI_AVAILABLE and label != "unknown":
-            try:
-                # Try to get API key from Streamlit secrets first (for cloud deployment)
-                api_key = None
-                try:
-                    import streamlit as st
-                    api_key = st.secrets["GEMINI_API_KEY"]
-                except (KeyError, FileNotFoundError, ImportError):
-                    # Fallback to environment variable (for local development)
-                    api_key = os.getenv("GEMINI_API_KEY")
-                
-                if api_key:
-                    genai.configure(api_key=api_key)
-                    model = genai.GenerativeModel('gemini-1.5-flash')
-                    
-                    prompt = f"""
-                    Extract key fields from this {label} document:
-                    
-                    Text: {cleaned_text[:1500]}
-                    
-                    Extract relevant fields like amounts, dates, numbers, names, etc.
-                    Return as JSON format.
-                    """
-                    
-                    response = model.generate_content(
-                        prompt,
-                        generation_config=genai.types.GenerationConfig(
-                            max_output_tokens=200,
-                            temperature=0.1
-                        )
-                    )
-                    
-                    # Try to parse JSON response
-                    try:
-                        import json
-                        gemini_fields = json.loads(response.text)
-                        if isinstance(gemini_fields, dict):
-                            fields.update(gemini_fields)
-                            result["gemini_fields_extracted"] = True
-                    except:
-                        # If not JSON, add as text insight
-                        result["gemini_field_insights"] = response.text
-                        
-            except Exception as e:
-                print(f"Gemini field extraction failed: {e}")
-                result["llm_field_error"] = str(e)
-                
-    except Exception as e:
-        print(f"Field extraction error: {e}")
-        result["field_extraction_error"] = str(e)
-    
-    result["fields"] = fields
+    # Field extraction removed - not used in current version
+    # Field extraction functionality removed - not used in current version
     return result
 
 
