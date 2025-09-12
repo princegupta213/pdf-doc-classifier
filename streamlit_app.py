@@ -196,7 +196,7 @@ if 'processing_history' not in st.session_state:
     st.session_state.processing_history = []
 
 # Sidebar configuration
-st.sidebar.header("⚙️ Configuration / कॉन्फ़िगरेशन")
+st.sidebar.header("⚙️ Configuration")
 
 # Class examples folder configuration
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
