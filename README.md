@@ -20,21 +20,18 @@ Classify PDFs into categories like invoice, bank statement, resume, ITR, and gov
 
 ```
 pdf_doc_classifier/
+├─ streamlit_app.py              # Main web application
 ├─ extract_and_classify.py       # Core extraction + classification
-├─ app_demo.py                   # CLI tool to classify a PDF
-├─ streamlit_app.py              # Web UI for uploads and visualization
 ├─ field_extraction.py           # Field extraction utilities
-├─ llm_prompts.py                # LLM functionality
-├─ alternative_llm.py            # Alternative LLM implementation
 ├─ requirements.txt              # Python dependencies
 ├─ README.md                     # This file
-├─ class_examples/
+├─ STREAMLIT_DEPLOYMENT.md       # Deployment guide
+├─ class_examples/               # Training data for classification
 │  ├─ invoice/*.txt
 │  ├─ bank_statement/*.txt
 │  ├─ resume/*.txt
 │  ├─ ITR/*.txt
 │  └─ government_id/*.txt
-└─ run_app.py                    # Application launcher
 ```
 
 ## Setup

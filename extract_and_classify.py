@@ -33,12 +33,8 @@ except ImportError:
     GEMINI_AVAILABLE = False
     print("Google Generative AI not available. Install google-generativeai package for AI features.")
 
-# Import alternative LLM functionality
-try:
-    from alternative_llm import get_enhanced_classification_without_llm
-    ALTERNATIVE_LLM_AVAILABLE = True
-except ImportError:
-    ALTERNATIVE_LLM_AVAILABLE = False
+# Alternative LLM functionality removed - using direct Gemini integration
+ALTERNATIVE_LLM_AVAILABLE = False
 
 def _lazy_imports():
     import importlib
