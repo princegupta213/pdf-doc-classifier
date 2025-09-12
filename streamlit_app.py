@@ -126,6 +126,32 @@ st.markdown("""
     .stProgress > div > div > div > div {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
     }
+    /* Custom metric styling */
+    .metric-label {
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+        color: #666 !important;
+    }
+    .metric-value {
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+    }
+    /* Override Streamlit metric styling */
+    [data-testid="metric-container"] {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+    }
+    [data-testid="metric-container"] > div {
+        font-size: 0.9rem !important;
+    }
+    [data-testid="metric-container"] > div > div {
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -378,8 +404,17 @@ if uploaded is not None:
         st.progress(min(max(confidence, 0.0), 1.0))
     
     with col3:
-        st.metric("Extracted Text", f"{result.get('extracted_chars',0):,} chars")
-        st.metric("Method", result.get('method','').title())
+        # Custom styled metrics with controlled font sizes
+        st.markdown(f"""
+        <div class="metric-card" style="margin-bottom: 1rem;">
+            <div class="metric-label">Extracted Text</div>
+            <div class="metric-value">{result.get('extracted_chars',0):,} chars</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Method</div>
+            <div class="metric-value">{result.get('method','').title()}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     # Detailed visualizations
     st.subheader("📊 Classification Scores")
