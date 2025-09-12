@@ -352,12 +352,16 @@ if GEMINI_AVAILABLE and gemini_api_key:
     # Configure Gemini
     genai.configure(api_key=gemini_api_key)
     gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-    enable_llm_enhancement = True
-    # enable_llm_fields removed - not used in current version
+    
+    # LLM Fallback Toggle
+    enable_llm_enhancement = st.sidebar.checkbox(
+        "Enable AI LLM Fallback", 
+        value=True, 
+        help="Use AI to enhance classification for medium confidence cases and unknown documents"
+    )
 else:
     st.sidebar.warning("AI Not Available")
     enable_llm_enhancement = False
-    # enable_llm_fields removed - not used in current version
     gemini_model = None
 
 # OCR Configuration
