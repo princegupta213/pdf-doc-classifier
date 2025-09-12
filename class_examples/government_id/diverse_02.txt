@@ -1,0 +1,18 @@
+INDIAN PASSPORT
+Government of India
+Passport Office, New Delhi
+
+Passport No: M1234567
+Name: Priya Sharma
+Given Name: Priya
+Surname: Sharma
+Date of Birth: 22-12-1990
+Place of Birth: Mumbai, Maharashtra
+Nationality: Indian
+Sex: Female
+
+Issue Date: 10-Jan-2020
+Expiry Date: 09-Jan-2030
+Place of Issue: New Delhi
+
+This passport is valid for travel to all countries

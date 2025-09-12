@@ -1,0 +1,7 @@
+BILL
+Amount: ₹500
+Date: Today
+Customer: Cash Sale
+Item: Coffee
+Payment: Cash
+No GST

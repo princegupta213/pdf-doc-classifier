@@ -1,0 +1,5 @@
+CV
+Name: Student
+Education: School
+No experience
+Looking for job

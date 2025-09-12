@@ -1,0 +1,18 @@
+ICICI BANK
+Account Statement - January 2024
+Account Name: Business Solutions Pvt Ltd
+Account Number: 1234567890
+Account Type: Current Account
+
+Business Transactions:
+Date | Particulars | Reference | Debit | Credit | Balance
+01-Jan | Opening Balance | | | | ₹5,00,000
+03-Jan | Client Payment | NEFT123456 | | ₹1,25,000 | ₹6,25,000
+05-Jan | Office Rent | CHQ001 | ₹50,000 | | ₹5,75,000
+08-Jan | Salary Payment | RTGS789 | ₹2,00,000 | | ₹3,75,000
+12-Jan | Invoice Payment | NEFT654321 | | ₹75,000 | ₹4,50,000
+15-Jan | Utility Bills | UPI987 | ₹15,000 | | ₹4,35,000
+20-Jan | Vendor Payment | CHQ002 | ₹30,000 | | ₹4,05,000
+25-Jan | Client Payment | NEFT111222 | | ₹2,00,000 | ₹6,05,000
+
+Closing Balance: ₹6,05,000.00

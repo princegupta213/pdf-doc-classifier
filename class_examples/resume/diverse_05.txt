@@ -1,0 +1,44 @@
+RESUME
+Vikram Singh
+Data Scientist
+vikram.singh@data.com | +91-9123456789
+Pune, Maharashtra
+
+PROFESSIONAL PROFILE:
+Data Scientist with 5+ years of experience in machine learning, statistical analysis, and big data technologies. Passionate about solving complex business problems through data-driven insights.
+
+TECHNICAL EXPERTISE:
+Programming: Python, R, SQL, Scala
+ML/AI: TensorFlow, PyTorch, Scikit-learn, Pandas, NumPy
+Big Data: Hadoop, Spark, Kafka, Hive
+Cloud: AWS, Azure, Google Cloud Platform
+Visualization: Tableau, Power BI, Matplotlib, Seaborn
+
+WORK EXPERIENCE:
+Senior Data Scientist | Tech Startup | 2022-Present
+- Built ML models improving customer retention by 25%
+- Led data science team of 4 members
+- Implemented real-time recommendation system
+
+Data Scientist | E-commerce Company | 2020-2022
+- Developed fraud detection algorithms
+- Created customer segmentation models
+- Reduced false positives by 30%
+
+Data Analyst | Consulting Firm | 2019-2020
+- Performed statistical analysis for clients
+- Created interactive dashboards
+- Delivered insights for business optimization
+
+EDUCATION:
+M.Tech Data Science | IIT Bombay | 2019
+B.Tech Computer Science | NIT Surat | 2017
+
+PROJECTS:
+- Recommendation Engine for E-commerce
+- Predictive Analytics for Sales Forecasting
+- Natural Language Processing for Sentiment Analysis
+
+PUBLICATIONS:
+- "Deep Learning for Customer Churn Prediction" - IEEE 2023
+- "Ensemble Methods in Machine Learning" - Data Science Journal 2022

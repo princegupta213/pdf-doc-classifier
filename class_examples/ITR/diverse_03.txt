@@ -1,0 +1,28 @@
+INCOME TAX RETURN
+Assessment Year: 2024-25
+Form: ITR-2 (Capital Gains)
+PAN: MNOPQ9012H
+Name: Amit Patel
+Residential Status: Resident
+
+INCOME SOURCES:
+Salary: ₹12,00,000
+House Property Income: ₹3,00,000
+Capital Gains (LTCG): ₹5,00,000
+Interest Income: ₹75,000
+Gross Total Income: ₹20,75,000
+
+DEDUCTIONS:
+80C: ₹1,50,000
+80D: ₹25,000
+24(b) (Home Loan Interest): ₹2,00,000
+Total Deductions: ₹3,75,000
+
+Taxable Income: ₹17,00,000
+Tax on Normal Income: ₹2,85,000
+Tax on LTCG: ₹50,000
+Total Tax: ₹3,35,000
+TDS: ₹3,50,000
+Refund: ₹15,000
+
+Status: Refund Issued

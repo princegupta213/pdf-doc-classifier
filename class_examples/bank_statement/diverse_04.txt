@@ -1,0 +1,20 @@
+AXIS BANK
+Credit Card Statement - March 2024
+Cardholder: Amit Patel
+Card Number: 4567****1234
+Credit Limit: ₹2,00,000
+Available Credit: ₹1,25,000
+
+Transaction Details:
+Date | Merchant | Amount | Category
+01-Mar | Amazon | ₹8,500 | Shopping
+05-Mar | Petrol Pump | ₹2,500 | Fuel
+08-Mar | Restaurant | ₹1,200 | Dining
+12-Mar | Online Payment | ₹15,000 | Utilities
+18-Mar | Grocery Store | ₹3,500 | Groceries
+22-Mar | Movie Tickets | ₹800 | Entertainment
+25-Mar | Pharmacy | ₹1,500 | Healthcare
+
+Total Spent: ₹33,000
+Minimum Payment Due: ₹3,300
+Payment Due Date: 15-Apr-2024

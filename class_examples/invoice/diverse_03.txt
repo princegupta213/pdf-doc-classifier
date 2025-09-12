@@ -1,0 +1,18 @@
+SERVICE BILL
+Bill No: SB-2024-999
+Date: 10-Jan-2024
+Service Provider: Digital Marketing Agency
+Client: E-commerce Store
+
+Services Rendered:
+- Social Media Management: ₹15,000
+- Google Ads Campaign: ₹25,000
+- Content Creation: ₹8,000
+- SEO Optimization: ₹12,000
+
+Subtotal: ₹60,000
+GST (18%): ₹10,800
+Total Amount: ₹70,800
+
+Payment Due: 30 days from invoice date
+Late Fee: 2% per month

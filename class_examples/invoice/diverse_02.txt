@@ -1,0 +1,17 @@
+COMMERCIAL INVOICE
+Invoice #: CI-2024-5678
+Issue Date: 28-Feb-2024
+Vendor: Global Exports Ltd
+Customer: International Corp
+
+Items:
+- Product A: 100 units @ $25.00 = $2,500.00
+- Product B: 50 units @ $15.00 = $750.00
+- Shipping: $150.00
+Subtotal: $3,400.00
+Tax (VAT 18%): $612.00
+TOTAL: $4,012.00
+
+Payment: Wire Transfer
+Currency: USD
+Terms: FOB Destination

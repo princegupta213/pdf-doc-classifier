@@ -1,0 +1,22 @@
+KOTAK MAHINDRA BANK
+Savings Account Statement - April 2024
+Account Holder: Sunita Devi
+Account Number: 9876543210
+Branch: CP, New Delhi
+
+Account Summary:
+- Previous Balance: ₹45,000
+- Total Deposits: ₹25,000
+- Total Withdrawals: ₹18,000
+- Current Balance: ₹52,000
+
+Transaction History:
+01-Apr | Cash Deposit | CR | ₹10,000 | ₹55,000
+03-Apr | ATM Withdrawal | DR | ₹5,000 | ₹50,000
+07-Apr | NEFT Transfer | DR | ₹8,000 | ₹42,000
+10-Apr | Interest Credit | CR | ₹500 | ₹42,500
+15-Apr | UPI Payment | DR | ₹2,500 | ₹40,000
+20-Apr | Salary Credit | CR | ₹15,000 | ₹55,000
+25-Apr | Online Transfer | DR | ₹3,000 | ₹52,000
+
+Available Balance: ₹52,000.00

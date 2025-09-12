@@ -1,0 +1,26 @@
+INCOME TAX RETURN
+Assessment Year: 2024-25
+Form: ITR-1 (Sahaj)
+PAN: WXYZA7890J
+Name: Vikram Singh
+Senior Citizen (Age: 65)
+
+INCOME DETAILS:
+Pension Income: ₹6,00,000
+Interest from FDs: ₹2,00,000
+Interest from Savings: ₹25,000
+Gross Total Income: ₹8,25,000
+
+DEDUCTIONS:
+80C: ₹1,50,000
+80D: ₹50,000 (Senior Citizen)
+80TTB (Interest): ₹50,000
+Total Deductions: ₹2,50,000
+
+Taxable Income: ₹5,75,000
+Tax Payable: ₹28,750
+TDS Deducted: ₹35,000
+Refund Due: ₹6,250
+
+Status: Refund Processed
+Special Rate: Senior Citizen Tax Slab

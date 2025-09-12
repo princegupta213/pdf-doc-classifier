@@ -1,0 +1,29 @@
+INCOME TAX RETURN
+Assessment Year: 2024-25
+Form: ITR-3 (Business Income)
+PAN: XYZAB5678G
+Name: Priya Sharma
+Business: Software Consultancy
+
+BUSINESS INCOME:
+Gross Receipts: ₹25,00,000
+Less: Business Expenses: ₹8,00,000
+Net Business Income: ₹17,00,000
+
+OTHER INCOME:
+Interest Income: ₹50,000
+Capital Gains: ₹2,00,000
+Gross Total Income: ₹19,50,000
+
+DEDUCTIONS:
+80C: ₹1,50,000
+80D: ₹25,000
+80G (Donations): ₹50,000
+Total Deductions: ₹2,25,000
+
+Taxable Income: ₹17,25,000
+Tax Payable: ₹3,45,000
+Advance Tax Paid: ₹3,00,000
+Balance Tax Due: ₹45,000
+
+Status: Tax Due

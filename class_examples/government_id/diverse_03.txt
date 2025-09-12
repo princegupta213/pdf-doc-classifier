@@ -1,0 +1,20 @@
+DRIVING LICENSE
+Government of India
+Regional Transport Office, Mumbai
+
+License No: MH02-20180012345
+Name: Amit Kumar Patel
+Father's Name: Ramesh Patel
+Date of Birth: 05-07-1988
+Address: 456, Andheri West, Mumbai - 400058
+
+Vehicle Classes:
+- LMV (Light Motor Vehicle)
+- MCWG (Motor Cycle with Gear)
+
+Issue Date: 15-Mar-2018
+Valid From: 15-Mar-2018
+Valid Until: 14-Mar-2028
+
+Blood Group: B+
+Signature of License Holder

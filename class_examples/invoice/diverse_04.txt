@@ -1,0 +1,19 @@
+RETAIL INVOICE
+Receipt No: R-2024-4567
+Date: 05-Apr-2024
+Store: Electronics World
+Customer: Walk-in Customer
+
+Items Purchased:
+1. Laptop - Dell Inspiron: ₹45,000
+2. Mouse - Wireless: ₹1,500
+3. Keyboard - Mechanical: ₹3,000
+4. Warranty Extension: ₹2,000
+
+Subtotal: ₹51,500
+Discount (5%): ₹2,575
+Tax (GST 18%): ₹8,807
+Final Amount: ₹57,732
+
+Payment Method: Credit Card
+Card Ending: ****1234

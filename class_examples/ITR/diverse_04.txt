@@ -1,0 +1,24 @@
+INCOME TAX RETURN
+Assessment Year: 2024-25
+Form: ITR-4 (Presumptive Tax)
+PAN: RSTUV3456I
+Name: Sunita Devi
+Business: Retail Shop
+
+PRESUMPTIVE INCOME:
+Gross Turnover: ₹15,00,000
+Presumptive Income (8%): ₹1,20,000
+Other Income: ₹30,000
+Gross Total Income: ₹1,50,000
+
+DEDUCTIONS:
+80C: ₹1,50,000
+Total Deductions: ₹1,50,000
+
+Taxable Income: ₹0
+Tax Payable: ₹0
+Advance Tax Paid: ₹0
+Refund Due: ₹0
+
+Status: No Tax Liability
+Remarks: Income below taxable limit

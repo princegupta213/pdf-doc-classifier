@@ -1,0 +1,17 @@
+PROFORMA INVOICE
+Proforma Invoice No: PI-2024-789
+Date: 20-Mar-2024
+Exporter: Manufacturing Co Ltd
+Importer: Overseas Buyer Ltd
+
+Product Details:
+- Industrial Equipment: 2 units
+- Unit Price: €5,000.00
+- Total Value: €10,000.00
+- Freight: €500.00
+- Insurance: €100.00
+
+Grand Total: €10,600.00
+Currency: Euro (EUR)
+Payment Terms: 50% advance, 50% on delivery
+Delivery: 30 days from order confirmation

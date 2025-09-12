@@ -1,0 +1,20 @@
+HDFC BANK
+Monthly Statement - February 2024
+Customer: Priya Sharma
+Account: 50123456789
+Branch: Bandra West, Mumbai
+
+Transaction Summary:
+- Total Credits: ₹1,50,000
+- Total Debits: ₹85,000
+- Net Balance: ₹65,000
+
+Recent Transactions:
+28-Feb | Salary | CR | ₹50,000 | ₹1,15,000
+25-Feb | Online Shopping | DR | ₹8,500 | ₹65,000
+22-Feb | Rent Payment | DR | ₹25,000 | ₹73,500
+18-Feb | Investment | DR | ₹15,000 | ₹98,500
+15-Feb | Bonus | CR | ₹30,000 | ₹1,13,500
+10-Feb | Grocery | DR | ₹3,500 | ₹83,500
+
+Available Balance: ₹65,000.00

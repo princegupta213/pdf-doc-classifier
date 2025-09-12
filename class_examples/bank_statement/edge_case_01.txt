@@ -1,0 +1,4 @@
+BALANCE: ₹0.00
+Account: 0000000000
+No transactions
+Account closed

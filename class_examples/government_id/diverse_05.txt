@@ -1,0 +1,13 @@
+PAN CARD
+Income Tax Department
+Government of India
+
+Permanent Account Number: ABCDE1234F
+Name: Vikram Singh
+Father's Name: Rajesh Singh
+Date of Birth: 25-11-1982
+Signature: Vikram Singh
+
+Issue Date: 15-Jun-2010
+This is a valid PAN card issued by Income Tax Department
+Used for tax purposes and financial transactions

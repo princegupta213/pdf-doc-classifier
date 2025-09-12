@@ -1,0 +1,39 @@
+BIO-DATA
+Name: Dr. Amit Patel
+Specialization: Cardiologist
+Email: dr.amit.patel@hospital.com
+Phone: +91-9988776655
+Address: 123 Medical Center, Delhi
+
+PROFESSIONAL QUALIFICATION:
+MBBS | AIIMS Delhi | 2010
+MD Medicine | AIIMS Delhi | 2014
+DM Cardiology | AIIMS Delhi | 2018
+
+CURRENT POSITION:
+Senior Consultant Cardiologist | Apollo Hospitals | 2020-Present
+- Performed 500+ cardiac procedures
+- Led cardiac emergency team
+- Published 15 research papers
+
+PREVIOUS EXPERIENCE:
+Consultant Cardiologist | Fortis Hospital | 2018-2020
+- Specialized in interventional cardiology
+- Conducted 300+ angioplasty procedures
+- Mentored junior doctors
+
+Resident Doctor | AIIMS Delhi | 2014-2018
+- Rotated through various departments
+- Assisted in complex cardiac surgeries
+- Participated in research projects
+
+SPECIALIZATIONS:
+Interventional Cardiology, Echocardiography, Cardiac Catheterization, Pacemaker Implantation
+
+PUBLICATIONS:
+- "Advances in Cardiac Stenting" - Journal of Cardiology 2023
+- "Management of Acute MI" - Indian Heart Journal 2022
+
+MEMBERSHIPS:
+Cardiological Society of India
+American College of Cardiology

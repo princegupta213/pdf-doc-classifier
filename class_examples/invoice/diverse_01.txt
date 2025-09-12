@@ -1,0 +1,14 @@
+TAX INVOICE
+Invoice No: TAX/2024/001234
+Date: 15-Mar-2024
+Bill To: Tech Solutions Pvt Ltd
+Address: 123 Business Park, Mumbai - 400001
+
+Description: Software Development Services
+Quantity: 1 | Rate: ₹50,000.00 | Amount: ₹50,000.00
+CGST @ 9%: ₹4,500.00
+SGST @ 9%: ₹4,500.00
+Total Amount: ₹59,000.00
+
+Payment Terms: Net 15 days
+Bank Details: HDFC Bank, A/c: 1234567890

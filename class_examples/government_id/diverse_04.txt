@@ -1,0 +1,20 @@
+VOTER ID CARD
+Election Commission of India
+Electoral Photo Identity Card
+
+EPIC No: ABC1234567
+Name: Sunita Devi
+Father's Name: Ram Prasad
+Husband's Name: Shyam Kumar
+Date of Birth: 10-05-1975
+Gender: Female
+
+Address: Village: Ramnagar, Post: Ramnagar, 
+District: Patna, State: Bihar, PIN: 800001
+
+Assembly Constituency: Patna Sahib
+Parliamentary Constituency: Patna
+Part No: 123, Serial No: 456
+
+Issue Date: 20-Apr-2019
+Valid Until: Further Notice

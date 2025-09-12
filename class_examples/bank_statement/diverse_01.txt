@@ -1,0 +1,16 @@
+STATE BANK OF INDIA
+Account Statement - March 2024
+Account Holder: Rajesh Kumar
+Account Number: 123456789012
+IFSC Code: SBIN0001234
+Branch: Connaught Place, New Delhi
+
+Opening Balance: ₹1,25,000.00
+Date | Description | Debit | Credit | Balance
+01-Mar | Salary Credit | | ₹75,000 | ₹2,00,000
+05-Mar | ATM Withdrawal | ₹5,000 | | ₹1,95,000
+10-Mar | NEFT Transfer | ₹25,000 | | ₹1,70,000
+15-Mar | Interest Credit | | ₹1,250 | ₹1,71,250
+20-Mar | UPI Payment | ₹2,500 | | ₹1,68,750
+25-Mar | Cheque Deposit | | ₹15,000 | ₹1,83,750
+Closing Balance: ₹1,83,750.00

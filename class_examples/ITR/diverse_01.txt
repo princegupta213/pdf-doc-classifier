@@ -1,0 +1,25 @@
+INCOME TAX RETURN
+Assessment Year: 2024-25
+Form: ITR-1 (Sahaj)
+PAN: ABCDE1234F
+Name: Rajesh Kumar Singh
+Assessment Year: 2024-25
+
+INCOME DETAILS:
+Salary Income: ₹8,50,000
+Interest from Savings: ₹15,000
+Interest from Fixed Deposits: ₹25,000
+Gross Total Income: ₹8,90,000
+
+DEDUCTIONS:
+80C (PPF, LIC): ₹1,50,000
+80D (Health Insurance): ₹25,000
+80TTA (Savings Interest): ₹10,000
+Total Deductions: ₹1,85,000
+
+Taxable Income: ₹7,05,000
+Tax Payable: ₹45,000
+TDS Deducted: ₹50,000
+Refund Due: ₹5,000
+
+Status: Refund Processed
