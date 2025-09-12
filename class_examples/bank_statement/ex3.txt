@@ -1,0 +1,3 @@
+BANK STATEMENT
+Account Number: 123450030
+Debit 121.90 | Credit 289.40 | Balance 121.15

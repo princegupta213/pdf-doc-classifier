@@ -1,0 +1,3 @@
+Curriculum Vitae
+Experience: QA Engineer | Education: B.Sc
+Skills: Selenium, JUnit | Achievements: Test Coverage 95%

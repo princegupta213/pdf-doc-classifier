@@ -1,0 +1,4 @@
+INVOICE #012
+BILL TO: John Doe Pvt Ltd
+Amount Due: 184.75 | Subtotal: 406.00
+GST Included | Payment Terms: Due on Receipt

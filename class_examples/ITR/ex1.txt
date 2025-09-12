@@ -1,0 +1,4 @@
+Income Tax Return (ITR) AY 2021-{YEAR+1}
+PAN: ABCDE001F
+Gross Total Income: 26300
+TDS Claimed | 80C Deduction | Refund Status: Initiated

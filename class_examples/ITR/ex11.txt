@@ -1,0 +1,4 @@
+Income Tax Return (ITR) AY 2025-{YEAR+1}
+PAN: ABCDE011F
+Gross Total Income: 39300
+TDS Claimed | 80C Deduction | Refund Status: Initiated

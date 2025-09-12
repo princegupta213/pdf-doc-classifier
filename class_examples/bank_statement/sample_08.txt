@@ -1,0 +1,1 @@
+Account Statement 08\nAccount Number: 123408\nTransaction: Debit .00\nBalance: .25\nBank branch: Main City

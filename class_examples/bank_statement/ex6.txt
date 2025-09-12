@@ -1,0 +1,4 @@
+Bank Statement - 2020
+Account Number: 00123456006
+Transaction: Debit 142.00 | Credit 328.00
+Closing Balance: 328.25 | NEFT Ref: NEFT006

@@ -1,0 +1,3 @@
+Resume Summary
+Projects: NLP Pipeline 2022 | Skills: Transformers, FastAPI
+Contact: resume014@example.com | LinkedIn included

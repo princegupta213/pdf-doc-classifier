@@ -1,0 +1,3 @@
+Invoice Number: 2024-009
+Amount Due: 367.00
+Payment Terms: Net 15 | Subtotal: 163.00

@@ -1,0 +1,1 @@
+Invoice #10\nSubtotal: .00\nTotal Due: .50\nPayment terms: Net 30\nThank you for your business

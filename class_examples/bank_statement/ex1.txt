@@ -1,0 +1,4 @@
+Bank Statement - 2021
+Account Number: 00123456001
+Transaction: Debit 107.00 | Credit 263.00
+Closing Balance: 263.25 | NEFT Ref: NEFT001

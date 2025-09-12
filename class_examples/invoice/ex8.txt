@@ -1,0 +1,4 @@
+Tax Invoice - Series A 008
+Bill To: Globex LLC
+Subtotal 156.25 | GST 18%
+Authorized Signatory: Finance Manager

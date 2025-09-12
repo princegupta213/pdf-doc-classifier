@@ -1,0 +1,4 @@
+Commercial Invoice INV-015
+Bill To: Example Industries
+Subtotal 205.00 | GST Registered
+Authorized Signatory

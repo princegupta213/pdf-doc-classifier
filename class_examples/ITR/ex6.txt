@@ -1,0 +1,4 @@
+Income Tax Return (ITR) AY 2020-{YEAR+1}
+PAN: ABCDE006F
+Gross Total Income: 32800
+TDS Claimed | 80C Deduction | Refund Status: Initiated

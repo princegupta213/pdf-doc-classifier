@@ -1,0 +1,5 @@
+Invoice No: INV-011
+Bill To: Acme Corp
+GST: 27ABCDE1234F1Z5
+Subtotal: 177.00 | Amount Due: 393.50
+Payment Terms: Net 30 | Authorized Signatory

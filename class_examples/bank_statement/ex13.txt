@@ -1,0 +1,3 @@
+BANK STATEMENT
+Account Number: 123450130
+Debit 191.90 | Credit 419.40 | Balance 191.15
