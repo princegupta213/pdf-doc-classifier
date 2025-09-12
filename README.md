@@ -23,7 +23,7 @@ Score > 0.70 → high confidence
 ## 📋 **Assignment Submission**
 
 ### **Deliverables:**
-1. ✅ **Runnable Prototype**: [https://pdf-classifier-idfy.streamlit.app](https://pdf-classifier-idfy.streamlit.app)
+1. ✅ **Runnable Prototype**: See Live Demo above
 2. ✅ **README Documentation**: This file (≤1 page, comprehensive)
 
 ### **Chosen Categories:**
