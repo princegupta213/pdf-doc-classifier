@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 import time
 import hashlib
+from typing import Dict
 
 from extract_and_classify import (
     extract_text_with_pymupdf,
