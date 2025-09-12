@@ -37,6 +37,13 @@ except ImportError:
     LLM_AVAILABLE = False
     print("LLM prompts module not available. Install openai package for LLM features.")
 
+# Import alternative LLM functionality
+try:
+    from alternative_llm import get_enhanced_classification_without_llm
+    ALTERNATIVE_LLM_AVAILABLE = True
+except ImportError:
+    ALTERNATIVE_LLM_AVAILABLE = False
+
 def _lazy_imports():
     import importlib
     modules = {}
@@ -342,6 +349,20 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
         except Exception as e:
             print(f"LLM enhancement failed: {e}")
             result["llm_error"] = str(e)
+            
+            # Try alternative LLM enhancement
+            if ALTERNATIVE_LLM_AVAILABLE:
+                try:
+                    alt_result = get_enhanced_classification_without_llm(cleaned, result)
+                    if alt_result:
+                        result.update({
+                            "alternative_enhanced": True,
+                            "enhanced_heuristics": alt_result.get("enhanced_heuristics", False),
+                            "suggested_actions": alt_result.get("suggestions", []),
+                            "field_hints": alt_result.get("field_hints", {})
+                        })
+                except Exception as alt_e:
+                    print(f"Alternative LLM enhancement failed: {alt_e}")
     
     return result
 

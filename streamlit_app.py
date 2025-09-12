@@ -377,11 +377,13 @@ if uploaded is not None:
         st.warning("No specific fields were extracted from this document.")
     
     # LLM Insights section
-    if result.get("llm_enhanced") or result.get("llm_insights"):
+    if result.get("llm_enhanced") or result.get("llm_insights") or result.get("alternative_enhanced"):
         st.subheader("🤖 AI Insights")
         
         if result.get("llm_enhanced"):
-            st.success("✨ Classification enhanced with AI")
+            st.success("✨ Classification enhanced with OpenAI AI")
+        elif result.get("alternative_enhanced"):
+            st.info("🔧 Classification enhanced with alternative AI heuristics")
         
         if result.get("llm_insights"):
             with st.expander("View AI Analysis", expanded=False):
@@ -395,6 +397,15 @@ if uploaded is not None:
             st.subheader("💡 Suggested Actions")
             for action in result["suggested_actions"]:
                 st.info(f"• {action}")
+        
+        if result.get("field_hints"):
+            st.subheader("🔍 Field Extraction Hints")
+            for field, hint in result["field_hints"].items():
+                st.info(f"**{field.replace('_', ' ').title()}:** {hint}")
+        
+        if result.get("llm_error"):
+            st.warning(f"⚠️ LLM Error: {result['llm_error']}")
+            st.info("💡 Alternative AI heuristics were used instead.")
 
     # Tabs for additional information
     tab1, tab2, tab3 = st.tabs(["📄 Extracted Text", "📊 Raw Data", "💾 Download"])
