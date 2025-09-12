@@ -65,22 +65,18 @@ The application provides English interface with Hindi OCR support:
 
 ## Run Instructions
 
-- CLI:
+- Streamlit app (recommended):
 
 ```bash
-python app_demo.py --file samples/sample.pdf
-```
+# Option 1: Run with the provided script (includes Gemini AI)
+./run_with_gemini.sh
 
-- Streamlit app:
-
-```bash
+# Option 2: Run manually with API key
+export GEMINI_API_KEY="AIzaSyDsziZRc_ND5qnFQ0RtqLpxcAoqjqzR6ms"
 streamlit run streamlit_app.py
-```
 
-- Run with launcher script:
-
-```bash
-python run_app.py
+# Option 3: Run without API key (limited features)
+streamlit run streamlit_app.py
 ```
 
 ## AI Integration / AI एकीकरण
