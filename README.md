@@ -16,6 +16,38 @@ Score > 0.70 → high confidence
    - 0.30–0.70 → medium
    - < 0.30 → unknown
    - If (best − second_best) < 0.10 → unknown (ambiguous)
+
+## 🚀 **Live Demo**
+**Hosted Prototype**: [https://pdf-classifier-idfy.streamlit.app](https://pdf-classifier-idfy.streamlit.app)
+
+## 📋 **Assignment Submission**
+
+### **Deliverables:**
+1. ✅ **Runnable Prototype**: [https://pdf-classifier-idfy.streamlit.app](https://pdf-classifier-idfy.streamlit.app)
+2. ✅ **README Documentation**: This file (≤1 page, comprehensive)
+
+### **Chosen Categories:**
+- Invoice (bills, receipts, tax invoices)
+- Bank Statement (account statements, transaction records)  
+- Resume (CV, professional profiles)
+- ITR (Income Tax Returns, tax documents)
+- Government ID (Aadhaar, Passport, Driving License, etc.)
+
+### **Approach (5-8 lines):**
+1. **Text Extraction**: PyMuPDF for digital PDFs, Tesseract OCR for scanned documents
+2. **Embedding Generation**: Sentence transformers to create document embeddings
+3. **Classification**: Cosine similarity against pre-computed class centroids
+4. **Keyword Boosting**: Enhanced accuracy with domain-specific keywords
+5. **LLM Fallback**: Gemini AI for ambiguous cases and confidence enhancement
+6. **Confidence Scoring**: Multi-tier system (high >0.7, medium 0.3-0.7, low <0.3)
+7. **Error Handling**: Graceful handling of bad PDFs, API failures, and edge cases
+
+### **Adding New Categories:**
+1. Create new folder in `class_examples/` (e.g., `contract/`)
+2. Add 20-30 sample `.txt` files for the new category
+3. Update keyword list in `_keyword_boosts()` function
+4. Redeploy - no code changes needed!
+
 ## Project Structure
 
 ```
