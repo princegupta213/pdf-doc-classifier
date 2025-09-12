@@ -16,8 +16,14 @@
 4. **ITR** - Income Tax Returns, tax documents
 5. **Government ID** - Passports, driver's licenses, identity cards
 
-### Approach (5-8 lines)
-This application uses a hybrid approach combining text embedding similarity with keyword-based classification. Document text is extracted using PyMuPDF and OCR (Tesseract), then converted to sentence embeddings using SentenceTransformers. The system calculates cosine similarity against pre-built centroids from training samples for each document type. Keyword boosting enhances classification accuracy by identifying domain-specific terms. For ambiguous cases (confidence 0.3-0.7), Google Gemini AI provides intelligent fallback classification. The system supports both English and Hindi documents through multilingual OCR processing.
+### Approach
+- **Text Extraction**: PyMuPDF for PDF text + Tesseract OCR for scanned documents
+- **Embedding Generation**: SentenceTransformers converts text to vector embeddings
+- **Similarity Matching**: Cosine similarity against pre-built centroids from training samples
+- **Keyword Boosting**: Domain-specific terms enhance classification accuracy
+- **AI Fallback**: Google Gemini AI handles ambiguous cases (confidence 0.3-0.7)
+- **Multilingual Support**: English + Hindi OCR processing
+- **Hybrid Classification**: Combines embedding similarity with keyword-based logic
 
 ### How to Add New Categories
 1. Create a new subfolder under `class_examples/` with your category name (e.g., `class_examples/shipping_label/`)
