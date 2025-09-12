@@ -340,7 +340,7 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
         # Check if the best match has strong keyword indicators
         keyword_boosts = _keyword_boosts()
         best_keywords = keyword_boosts.get(best_label, [])
-        keyword_matches = sum(1 for kw in best_keywords if kw.lower() in cleaned_text.lower())
+        keyword_matches = sum(1 for kw in best_keywords if kw.lower() in cleaned.lower())
         
         if keyword_matches >= 3:  # Strong keyword evidence
             # Override ambiguous classification for strong keyword matches

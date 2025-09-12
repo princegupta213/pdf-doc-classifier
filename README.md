@@ -59,9 +59,7 @@ The application provides English interface with Hindi OCR support:
 - `eng+hin` - English + Hindi (Default)
 - `eng` - English only
 - `hin` - Hindi only
-- `eng+fra` - English + French
-- `eng+spa` - English + Spanish
-- `eng+deu` - English + German
+
 
 ## Run Instructions
 
