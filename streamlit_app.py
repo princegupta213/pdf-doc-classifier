@@ -374,7 +374,7 @@ else:
 # OCR Configuration
 st.sidebar.header("OCR Settings")
 ocr_dpi = st.sidebar.slider("OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower")
-ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin", "eng+fra", "eng+spa", "eng+deu"], help="Language for OCR processing")
+ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin"], help="Language for OCR processing")
 
 # Load model and centroids
 with st.spinner("Loading AI model and building class centroids..."):
