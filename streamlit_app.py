@@ -563,13 +563,13 @@ if uploaded_files:
         
         with st.expander(f"📄 {uploaded_file.name}", expanded=False):
             try:
-                    # Store PDF content for potential review queue use
-                    file_pdf_content = uploaded_file.read()
-                    uploaded_file.seek(0)  # Reset file pointer for processing
-                    
+                # Store PDF content for potential review queue use
+                file_pdf_content = uploaded_file.read()
+                uploaded_file.seek(0)  # Reset file pointer for processing
+                
                 # Use cached processing function with OCR settings
                 centroids_hash = get_centroids_hash(centroids)
-                    result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
+                result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
                 result["filename"] = uploaded_file.name
                 
                 batch_results.append(result)
