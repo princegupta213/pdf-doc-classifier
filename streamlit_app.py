@@ -563,9 +563,13 @@ with col1:
             
             with st.expander(f"📄 {uploaded_file.name}", expanded=False):
                 try:
+                    # Store PDF content for potential review queue use
+                    file_pdf_content = uploaded_file.read()
+                    uploaded_file.seek(0)  # Reset file pointer for processing
+                    
                     # Use cached processing function with OCR settings
                     centroids_hash = get_centroids_hash(centroids)
-                    result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
+                    result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
                     result["filename"] = uploaded_file.name
                     
                     batch_results.append(result)
@@ -607,7 +611,7 @@ with col1:
                                 "rationale": rationale,
                                 "timestamp": datetime.now().isoformat(),
                                 "method": result.get("method", ""),
-                                "pdf_content": uploaded_file.read()  # Store PDF content for preview
+                                "pdf_content": file_pdf_content  # Use stored PDF content for preview
                             }
                             st.session_state.review_queue.append(review_item)
                             if is_ambiguous:
@@ -770,6 +774,10 @@ with col2:
     """)
 
 if uploaded is not None:
+    # Store PDF content for potential review queue use
+    pdf_content = uploaded.read()
+    uploaded.seek(0)  # Reset file pointer for processing
+    
     # Processing with progress bar
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -835,7 +843,7 @@ if uploaded is not None:
                     "rationale": rationale,
                     "timestamp": datetime.now().isoformat(),
                     "method": result.get("method", ""),
-                    "pdf_content": uploaded.read()  # Store PDF content for preview
+                    "pdf_content": pdf_content  # Use stored PDF content for preview
                 }
                 st.session_state.review_queue.append(review_item)
                 if is_ambiguous:
