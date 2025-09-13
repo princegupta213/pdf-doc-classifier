@@ -31,7 +31,7 @@ except ImportError:
 
 # Page configuration
 st.set_page_config(
-    page_title="PDF Document Classifier", 
+    page_title="PDF Document Classifier",
     page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
@@ -528,71 +528,67 @@ with col1:
         type=["pdf"],
         help="Upload a PDF document to classify it automatically"
     )
-
-    # Add visual spacing - 4 lines down for batch processing text
-    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
     
-    # Batch processing section - moved here and positioned higher
+    # Add visual spacing
+    st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
+    
+    # Batch processing section - moved here
     st.header("Batch Processing")
+    st.write("Upload multiple PDFs for batch classification")
     
-    # Add spacing - 8 lines up for menu (reduce spacing between header and uploader)
-    st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
+    uploaded_files = st.file_uploader(
+        "Choose multiple PDF files", 
+        type=["pdf"],
+        accept_multiple_files=True,
+        help="Select multiple PDF files to process them all at once"
+    )
     
-st.write("Upload multiple PDFs for batch classification")
-
-uploaded_files = st.file_uploader(
-    "Choose multiple PDF files", 
-    type=["pdf"],
-    accept_multiple_files=True,
-    help="Select multiple PDF files to process them all at once"
-)
-
     # Batch processing logic
-if uploaded_files:
-    st.write(f"📊 Processing {len(uploaded_files)} files...")
-    
-    # Create a container for batch results
-    batch_results = []
-    
-    # Process each file with progress tracking
-    progress_container = st.container()
-    with progress_container:
-        batch_progress = st.progress(0)
-        batch_status = st.empty()
-    
-    # Process each file
-    for i, uploaded_file in enumerate(uploaded_files):
-        batch_status.text(f"Processing {i+1}/{len(uploaded_files)}: {uploaded_file.name}")
-        batch_progress.progress((i + 1) / len(uploaded_files))
+    if uploaded_files:
+        st.write(f"📊 Processing {len(uploaded_files)} files...")
         
-        with st.expander(f"📄 {uploaded_file.name}", expanded=False):
-            try:
-                # Store PDF content for potential review queue use
-                file_pdf_content = uploaded_file.read()
-                uploaded_file.seek(0)  # Reset file pointer for processing
-                
-                # Use cached processing function with OCR settings
-                centroids_hash = get_centroids_hash(centroids)
-                result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
-                result["filename"] = uploaded_file.name
-                
-                batch_results.append(result)
-                
-                # Display result for this file
-                label = result.get("label", "unknown")
-                confidence = float(result.get("confidence", 0.0))
-                text_length = result.get("extracted_chars", 0)
-                
-                col1, col2, col3 = st.columns(3)
-                with col1:
+        # Create a container for batch results
+        batch_results = []
+        
+        # Process each file with progress tracking
+        progress_container = st.container()
+        with progress_container:
+            batch_progress = st.progress(0)
+            batch_status = st.empty()
+        
+        # Process each file
+        for i, uploaded_file in enumerate(uploaded_files):
+            batch_status.text(f"Processing {i+1}/{len(uploaded_files)}: {uploaded_file.name}")
+            batch_progress.progress((i + 1) / len(uploaded_files))
+            
+            with st.expander(f"📄 {uploaded_file.name}", expanded=False):
+                try:
+                    # Store PDF content for potential review queue use
+                    file_pdf_content = uploaded_file.read()
+                    uploaded_file.seek(0)  # Reset file pointer for processing
+                    
+                    # Use cached processing function with OCR settings
+                    centroids_hash = get_centroids_hash(centroids)
+                    result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
+                    result["filename"] = uploaded_file.name
+                    
+                    batch_results.append(result)
+                    
+                    # Display result for this file
+                    label = result.get("label", "unknown")
+                    confidence = float(result.get("confidence", 0.0))
+                    text_length = result.get("extracted_chars", 0)
+                    
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
                         fallback_text = " (LLM Fallback)" if result.get("llm_fallback") else ""
                         st.metric("Classification", f"{label.title()}{fallback_text}")
-                with col2:
-                    st.metric("Confidence", f"{confidence:.1%}")
-                with col3:
-                    st.metric("Text Length", f"{text_length:,} chars")
-                
-                # Show success indicator
+                    with col2:
+                        st.metric("Confidence", f"{confidence:.1%}")
+                    with col3:
+                        st.metric("Text Length", f"{text_length:,} chars")
+                    
+                    # Show success indicator
                     st.success("Processed successfully")
                     
                     # Add to review queue if low confidence OR ambiguous classification (same logic as single upload)
@@ -616,75 +612,75 @@ if uploaded_files:
                                 "timestamp": datetime.now().isoformat(),
                                 "method": result.get("method", ""),
                                 "pdf_content": file_pdf_content,  # Use stored PDF content for preview
-                                "extracted_text": result.get("extracted_text", "")  # Store extracted text for fallback
+                                "extracted_text": result.get("extracted_text", "")  # Include extracted text for fallback
                             }
                             st.session_state.review_queue.append(review_item)
                             if is_ambiguous:
                                 st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
                             else:
                                 st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
-                
-            except Exception as e:
-                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
-                # Add error result to batch
-                error_result = {
-                    "filename": uploaded_file.name,
-                    "label": "error",
-                    "confidence": 0.0,
-                    "rationale": f"Processing error: {str(e)}",
-                    "method": "error",
-                    "extracted_chars": 0
+                    
+                except Exception as e:
+                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                    # Add error result to batch
+                    error_result = {
+                        "filename": uploaded_file.name,
+                        "label": "error",
+                        "confidence": 0.0,
+                        "rationale": f"Processing error: {str(e)}",
+                        "method": "error",
+                        "extracted_chars": 0
+                    }
+                    batch_results.append(error_result)
+        
+        # Clear progress indicators
+        batch_progress.empty()
+        batch_status.empty()
+        
+        # Batch summary
+        if batch_results:
+            st.subheader("📈 Batch Summary")
+            
+            # Create summary DataFrame
+            summary_data = []
+            for result in batch_results:
+                summary_data.append({
+                    'Filename': result['filename'],
+                    'Classification': result['label'].title(),
+                    'Confidence': f"{result['confidence']:.1%}",
+                    'Method': result['method'].title(),
+                    'Text Length': result['extracted_chars']
+                })
+            
+            summary_df = pd.DataFrame(summary_data)
+            st.dataframe(summary_df, use_container_width=True)
+            
+            # Classification distribution
+            classification_counts = pd.DataFrame(summary_data)['Classification'].value_counts()
+            if len(classification_counts) > 0:
+                fig_dist = px.pie(
+                    values=classification_counts.values,
+                    names=classification_counts.index,
+                    title="Classification Distribution"
+                )
+                st.plotly_chart(fig_dist, use_container_width=True)
+            
+            # Download batch results
+            batch_json = {
+                "batch_summary": {
+                    "total_files": len(batch_results),
+                    "processed_at": datetime.now().isoformat(),
+                    "results": batch_results
                 }
-                batch_results.append(error_result)
-    
-    # Clear progress indicators
-    batch_progress.empty()
-    batch_status.empty()
-    
-    # Batch summary
-    if batch_results:
-        st.subheader("📈 Batch Summary")
-        
-        # Create summary DataFrame
-        summary_data = []
-        for result in batch_results:
-            summary_data.append({
-                'Filename': result['filename'],
-                'Classification': result['label'].title(),
-                'Confidence': f"{result['confidence']:.1%}",
-                'Method': result['method'].title(),
-                'Text Length': result['extracted_chars']
-            })
-        
-        summary_df = pd.DataFrame(summary_data)
-        st.dataframe(summary_df, use_container_width=True)
-        
-        # Classification distribution
-        classification_counts = pd.DataFrame(summary_data)['Classification'].value_counts()
-        if len(classification_counts) > 0:
-            fig_dist = px.pie(
-                values=classification_counts.values,
-                names=classification_counts.index,
-                title="Classification Distribution"
-            )
-            st.plotly_chart(fig_dist, use_container_width=True)
-        
-        # Download batch results
-        batch_json = {
-            "batch_summary": {
-                "total_files": len(batch_results),
-                "processed_at": datetime.now().isoformat(),
-                "results": batch_results
             }
-        }
-        
-        st.download_button(
+            
+            st.download_button(
                 label="Download Batch Results",
-            data=json.dumps(batch_json, indent=2).encode("utf-8"),
-            file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            mime="application/json",
-            help="Download all batch classification results as a JSON file"
-        )
+                data=json.dumps(batch_json, indent=2).encode("utf-8"),
+                file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json",
+                help="Download all batch classification results as a JSON file"
+            )
 
     # Manual Review Queue
     st.markdown("<br>", unsafe_allow_html=True)
@@ -750,27 +746,27 @@ if uploaded_files:
                             # Display PDF using Streamlit's PDF viewer
                             st.pdf(item['pdf_content'])
                         except Exception as e:
-                            # Fallback: Show PDF as download link and basic info
-                            st.warning("PDF preview not available. You can download the PDF to view it.")
+                            # Fallback: Show PDF info and download option
+                            st.warning("PDF preview requires streamlit[pdf] component. Showing alternative view:")
                             
-                            # Provide download button for the PDF
+                            # Show PDF information
+                            st.write(f"**PDF File:** {item['filename']}")
+                            st.write(f"**File Size:** {len(item['pdf_content']):,} bytes")
+                            
+                            # Provide download option
                             st.download_button(
-                                label="📥 Download PDF to View",
+                                label="📥 Download PDF for Review",
                                 data=item['pdf_content'],
                                 file_name=item['filename'],
                                 mime="application/pdf",
-                                help="Download the PDF file to view it in your browser"
+                                help="Download the PDF to view it in your browser or PDF viewer"
                             )
                             
-                            # Show basic PDF info
-                            st.info(f"**PDF File:** {item['filename']}")
-                            st.info(f"**File Size:** {len(item['pdf_content']):,} bytes")
-                            
-                            # Show extracted text if available
+                            # Show extracted text as alternative
                             if 'extracted_text' in item and item['extracted_text']:
                                 st.write("**Extracted Text Preview:**")
-                                text_preview = item['extracted_text'][:500] + "..." if len(item['extracted_text']) > 500 else item['extracted_text']
-                                st.text_area("", text_preview, height=200, disabled=True)
+                                text_preview = item['extracted_text'][:1000] + "..." if len(item['extracted_text']) > 1000 else item['extracted_text']
+                                st.text_area("Text Content", text_preview, height=200, disabled=True)
                     else:
                         st.warning("PDF content not available for preview.")
     else:
@@ -868,7 +864,7 @@ if uploaded is not None:
                     "timestamp": datetime.now().isoformat(),
                     "method": result.get("method", ""),
                     "pdf_content": pdf_content,  # Use stored PDF content for preview
-                    "extracted_text": result.get("extracted_text", "")  # Store extracted text for fallback
+                    "extracted_text": result.get("extracted_text", "")  # Include extracted text for fallback
                 }
                 st.session_state.review_queue.append(review_item)
                 if is_ambiguous:
@@ -987,4 +983,5 @@ st.markdown(f"""
     <p>📧 For support or feature requests, please contact the development team</p>
 </div>
 """, unsafe_allow_html=True)
+
 
