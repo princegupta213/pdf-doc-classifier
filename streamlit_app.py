@@ -695,7 +695,7 @@ with col1:
                         st.session_state.review_queue.pop(i)
                         st.rerun()
     else:
-        st.info("No documents in review queue. Low-confidence results and ambiguous classifications (margin < 10%) will appear here automatically.")
+        st.info("No documents in review queue. Low-confidence results (< 30%) and ambiguous classifications (margin < 10%) will appear here automatically.")
 
 with col2:
     st.header("ℹ️ About")
