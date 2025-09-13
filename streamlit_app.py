@@ -606,7 +606,8 @@ with col1:
                                 "confidence": confidence,
                                 "rationale": rationale,
                                 "timestamp": datetime.now().isoformat(),
-                                "method": result.get("method", "")
+                                "method": result.get("method", ""),
+                                "pdf_content": uploaded_file.read()  # Store PDF content for preview
                             }
                             st.session_state.review_queue.append(review_item)
                             if is_ambiguous:
@@ -696,38 +697,54 @@ with col1:
         
         for i, item in enumerate(queue_items):
             with st.expander(f"📄 {item['filename']} - {item['classification'].title()} ({item['confidence']:.1%})", expanded=False):
-                col1, col2 = st.columns([2, 1])
+                # Create tabs for different views
+                tab1, tab2 = st.tabs(["📋 Review Details", "👁️ PDF Preview"])
                 
-                with col1:
-                    st.write(f"**Current Classification:** {item['classification'].title()}")
-                    st.write(f"**Confidence:** {item['confidence']:.1%}")
-                    st.write(f"**Reason:** {item.get('rationale', 'No reason provided')}")
+                with tab1:
+                    col1, col2 = st.columns([2, 1])
                     
-                    # Manual correction
-                    st.write("**Correct Classification:**")
-                    corrected_class = st.selectbox(
-                        "Select correct category:",
-                        ["invoice", "bank_statement", "resume", "ITR", "government_id", "unknown"] + 
-                        (st.session_state.get('custom_categories', [])),
-                        key=f"correct_{item['filename']}_{i}"  # Use filename to make key unique
-                    )
-                    
-                    if st.button(f"Update Classification", key=f"update_{item['filename']}_{i}"):
-                        # Update the classification
-                        item['corrected_classification'] = corrected_class
-                        item['manually_reviewed'] = True
-                        item['review_timestamp'] = datetime.now().isoformat()
+                    with col1:
+                        st.write(f"**Current Classification:** {item['classification'].title()}")
+                        st.write(f"**Confidence:** {item['confidence']:.1%}")
+                        st.write(f"**Reason:** {item.get('rationale', 'No reason provided')}")
                         
-                        # Remove from queue by finding the item
-                        st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
-                        st.success(f"Updated classification to: {corrected_class.title()}")
-                        st.rerun()
+                        # Manual correction
+                        st.write("**Correct Classification:**")
+                        corrected_class = st.selectbox(
+                            "Select correct category:",
+                            ["invoice", "bank_statement", "resume", "ITR", "government_id", "unknown"] + 
+                            (st.session_state.get('custom_categories', [])),
+                            key=f"correct_{item['filename']}_{i}"  # Use filename to make key unique
+                        )
+                        
+                        if st.button(f"Update Classification", key=f"update_{item['filename']}_{i}"):
+                            # Update the classification
+                            item['corrected_classification'] = corrected_class
+                            item['manually_reviewed'] = True
+                            item['review_timestamp'] = datetime.now().isoformat()
+                            
+                            # Remove from queue by finding the item
+                            st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
+                            st.success(f"Updated classification to: {corrected_class.title()}")
+                            st.rerun()
+                    
+                    with col2:
+                        if st.button(f"Remove from Queue", key=f"remove_{item['filename']}_{i}"):
+                            # Remove from queue by finding the item
+                            st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
+                            st.rerun()
                 
-                with col2:
-                    if st.button(f"Remove from Queue", key=f"remove_{item['filename']}_{i}"):
-                        # Remove from queue by finding the item
-                        st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
-                        st.rerun()
+                with tab2:
+                    # PDF Preview
+                    if 'pdf_content' in item and item['pdf_content']:
+                        try:
+                            # Display PDF using Streamlit's PDF viewer
+                            st.pdf(item['pdf_content'])
+                        except Exception as e:
+                            st.error(f"Could not display PDF preview: {str(e)}")
+                            st.info("PDF content is available but preview failed to render.")
+                    else:
+                        st.warning("PDF content not available for preview.")
     else:
         st.info("No documents in review queue. Low-confidence results (< 30%) and ambiguous classifications (margin < 10%) will appear here automatically.")
 
@@ -817,7 +834,8 @@ if uploaded is not None:
                     "confidence": confidence,
                     "rationale": rationale,
                     "timestamp": datetime.now().isoformat(),
-                    "method": result.get("method", "")
+                    "method": result.get("method", ""),
+                    "pdf_content": uploaded.read()  # Store PDF content for preview
                 }
                 st.session_state.review_queue.append(review_item)
                 if is_ambiguous:
