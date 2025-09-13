@@ -497,7 +497,7 @@ if st.sidebar.button("View Processing History"):
     st.session_state.show_history = True
 
 if st.session_state.get("show_history", False):
-if st.session_state.processing_history:
+    if st.session_state.processing_history:
         st.sidebar.write("**Recent Classifications:**")
         for i, entry in enumerate(st.session_state.processing_history[-5:]):  # Show last 5
             timestamp = entry['timestamp'][:19].replace('T', ' ')
