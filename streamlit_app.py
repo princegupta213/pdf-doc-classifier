@@ -567,6 +567,29 @@ with st.spinner("Loading AI model and building class centroids..."):
 # Main content area
 col1, col2 = st.columns([2, 1])
 
+# About section - positioned at top of col2 for fixed placement
+with col2:
+    st.header("ℹ️ About")
+    st.info("""
+    **Supported Document Types:**
+    - 📄 Invoice
+    - 🏦 Bank Statement  
+    - 👤 Resume/CV
+    - 📊 ITR (Income Tax Return)
+    - 🆔 Government ID
+    
+    **Features:**
+    - AI-powered classification
+    - LLM fallback for medium confidence
+    - OCR fallback support
+    - Confidence scoring
+    - Batch processing
+    - Multilingual support (English + Hindi)
+    - Real-time processing
+    - JSON export
+    """)
+
+# Main content in col1
 with col1:
     st.header("Upload PDF Document")
     uploaded = st.file_uploader(
@@ -809,26 +832,6 @@ with col1:
     else:
         st.info("No documents in review queue. Ambiguous classifications (margin < 10%) will appear here automatically.")
 
-with col2:
-    st.header("ℹ️ About")
-    st.info("""
-    **Supported Document Types:**
-    - 📄 Invoice
-    - 🏦 Bank Statement  
-    - 👤 Resume/CV
-    - 📊 ITR (Income Tax Return)
-    - 🆔 Government ID
-    
-    **Features:**
-    - AI-powered classification
-    - LLM fallback for medium confidence
-    - OCR fallback support
-    - Confidence scoring
-    - Batch processing
-    - Multilingual support (English + Hindi)
-    - Real-time processing
-    - JSON export
-    """)
 
 if uploaded is not None:
     # Store PDF content for potential review queue use
