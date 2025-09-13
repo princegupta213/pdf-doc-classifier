@@ -31,7 +31,7 @@ except ImportError:
 
 # Page configuration
 st.set_page_config(
-    page_title="PDF Document Classifier", 
+    page_title="PDF Document Classifier",
     page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
@@ -298,36 +298,14 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
         except Exception:
             pass
     
-    # Debug: Show text extraction info
-    text_length = len(text.strip())
-    result["extracted_chars"] = text_length
+    # Classify
+    result = classify_text(text, centroids, model=model)
+    result["method"] = "embedding"
+    if method and "ocr" in method.lower():
+        result["method"] += "+OCR"
+    result["extracted_chars"] = len(text)
     result["extracted_text"] = text  # Include the actual extracted text
     result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
-    result["extraction_method"] = method
-    
-    # Check if we have sufficient text for classification
-    if text_length < 10:
-        result = {
-            "label": "unknown",
-            "confidence": 0.0,
-            "rationale": f"Insufficient text extracted ({text_length} chars) - OCR may have failed",
-            "top_scores": {},
-            "method": method or "extraction_failed",
-            "extracted_chars": text_length,
-            "extracted_text": text,
-            "ocr_settings": {"dpi": ocr_dpi, "language": ocr_lang},
-            "extraction_method": method
-        }
-    else:
-        # Classify
-        result = classify_text(text, centroids, model=model)
-        result["method"] = "embedding"
-        if method and "ocr" in method.lower():
-            result["method"] += "+OCR"
-        result["extracted_chars"] = text_length
-        result["extracted_text"] = text
-        result["ocr_settings"] = {"dpi": ocr_dpi, "language": ocr_lang}
-        result["extraction_method"] = method
     
     # Enhance with Gemini AI for medium confidence cases (0.3-0.7) and unknown fallback
     confidence = result.get("confidence", 0.0)
@@ -398,7 +376,7 @@ st.sidebar.header("Configuration")
 
 # Class examples folder configuration (hidden from UI)
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
-    examples_dir = default_examples
+examples_dir = default_examples
 
 # LLM Configuration
 st.sidebar.header("AI Features")
@@ -581,7 +559,7 @@ else:
         st.rerun()
 
 if st.session_state.get("show_history", False):
-if st.session_state.processing_history:
+    if st.session_state.processing_history:
         st.sidebar.write("**Recent Classifications:**")
         for i, entry in enumerate(st.session_state.processing_history[-5:]):  # Show last 5
             timestamp = entry['timestamp'][:19].replace('T', ' ')
@@ -628,7 +606,7 @@ with col2:
     """)
 
 # Main content in col1
-    with col1:
+with col1:
     st.header("Upload PDF Document")
     uploaded = st.file_uploader(
         "Choose a PDF file", 
@@ -641,61 +619,61 @@ with col2:
     
     # Batch processing section - moved here
     st.header("Batch Processing")
-st.write("Upload multiple PDFs for batch classification")
-
-uploaded_files = st.file_uploader(
-    "Choose multiple PDF files", 
-    type=["pdf"],
-    accept_multiple_files=True,
-    help="Select multiple PDF files to process them all at once"
-)
-
+    st.write("Upload multiple PDFs for batch classification")
+    
+    uploaded_files = st.file_uploader(
+        "Choose multiple PDF files", 
+        type=["pdf"],
+        accept_multiple_files=True,
+        help="Select multiple PDF files to process them all at once"
+    )
+    
     # Batch processing logic
-if uploaded_files:
-    st.write(f"📊 Processing {len(uploaded_files)} files...")
-    
-    # Create a container for batch results
-    batch_results = []
-    
-    # Process each file with progress tracking
-    progress_container = st.container()
-    with progress_container:
-        batch_progress = st.progress(0)
-        batch_status = st.empty()
-    
-    # Process each file
-    for i, uploaded_file in enumerate(uploaded_files):
-        batch_status.text(f"Processing {i+1}/{len(uploaded_files)}: {uploaded_file.name}")
-        batch_progress.progress((i + 1) / len(uploaded_files))
+    if uploaded_files:
+        st.write(f"📊 Processing {len(uploaded_files)} files...")
         
-        with st.expander(f"📄 {uploaded_file.name}", expanded=False):
-            try:
+        # Create a container for batch results
+        batch_results = []
+        
+        # Process each file with progress tracking
+        progress_container = st.container()
+        with progress_container:
+            batch_progress = st.progress(0)
+            batch_status = st.empty()
+        
+        # Process each file
+        for i, uploaded_file in enumerate(uploaded_files):
+            batch_status.text(f"Processing {i+1}/{len(uploaded_files)}: {uploaded_file.name}")
+            batch_progress.progress((i + 1) / len(uploaded_files))
+            
+            with st.expander(f"📄 {uploaded_file.name}", expanded=False):
+                try:
                     # Store PDF content for potential review queue use
                     file_pdf_content = uploaded_file.read()
                     uploaded_file.seek(0)  # Reset file pointer for processing
                     
-                # Use cached processing function with OCR settings
-                centroids_hash = get_centroids_hash(centroids)
+                    # Use cached processing function with OCR settings
+                    centroids_hash = get_centroids_hash(centroids)
                     result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
-                result["filename"] = uploaded_file.name
-                
-                batch_results.append(result)
-                
-                # Display result for this file
-                label = result.get("label", "unknown")
-                confidence = float(result.get("confidence", 0.0))
-                text_length = result.get("extracted_chars", 0)
-                
-                col1, col2, col3 = st.columns(3)
-                with col1:
+                    result["filename"] = uploaded_file.name
+                    
+                    batch_results.append(result)
+                    
+                    # Display result for this file
+                    label = result.get("label", "unknown")
+                    confidence = float(result.get("confidence", 0.0))
+                    text_length = result.get("extracted_chars", 0)
+                    
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
                         fallback_text = " (LLM Fallback)" if result.get("llm_fallback") else ""
                         st.metric("Classification", f"{label.title()}{fallback_text}")
-                with col2:
-                    st.metric("Confidence", f"{confidence:.1%}")
-                with col3:
-                    st.metric("Text Length", f"{text_length:,} chars")
-                
-                # Show success indicator
+                    with col2:
+                        st.metric("Confidence", f"{confidence:.1%}")
+                    with col3:
+                        st.metric("Text Length", f"{text_length:,} chars")
+                    
+                    # Show success indicator
                     st.success("Processed successfully")
                     
                     # Add to review queue if ambiguous classification (same logic as single upload)
@@ -722,68 +700,68 @@ if uploaded_files:
                             }
                             st.session_state.review_queue.append(review_item)
                             st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
-                
-            except Exception as e:
+                    
+                except Exception as e:
                     st.error(f"Error processing {uploaded_file.name}: {str(e)}")
-                # Add error result to batch
-                error_result = {
-                    "filename": uploaded_file.name,
-                    "label": "error",
-                    "confidence": 0.0,
-                    "rationale": f"Processing error: {str(e)}",
-                    "method": "error",
-                    "extracted_chars": 0
+                    # Add error result to batch
+                    error_result = {
+                        "filename": uploaded_file.name,
+                        "label": "error",
+                        "confidence": 0.0,
+                        "rationale": f"Processing error: {str(e)}",
+                        "method": "error",
+                        "extracted_chars": 0
+                    }
+                    batch_results.append(error_result)
+        
+        # Clear progress indicators
+        batch_progress.empty()
+        batch_status.empty()
+        
+        # Batch summary
+        if batch_results:
+            st.subheader("📈 Batch Summary")
+            
+            # Create summary DataFrame
+            summary_data = []
+            for result in batch_results:
+                summary_data.append({
+                    'Filename': result['filename'],
+                    'Classification': result['label'].title(),
+                    'Confidence': f"{result['confidence']:.1%}",
+                    'Method': result['method'].title(),
+                    'Text Length': result['extracted_chars']
+                })
+            
+            summary_df = pd.DataFrame(summary_data)
+            st.dataframe(summary_df, use_container_width=True)
+            
+            # Classification distribution
+            classification_counts = pd.DataFrame(summary_data)['Classification'].value_counts()
+            if len(classification_counts) > 0:
+                fig_dist = px.pie(
+                    values=classification_counts.values,
+                    names=classification_counts.index,
+                    title="Classification Distribution"
+                )
+                st.plotly_chart(fig_dist, use_container_width=True)
+            
+            # Download batch results
+            batch_json = {
+                "batch_summary": {
+                    "total_files": len(batch_results),
+                    "processed_at": datetime.now().isoformat(),
+                    "results": batch_results
                 }
-                batch_results.append(error_result)
-    
-    # Clear progress indicators
-    batch_progress.empty()
-    batch_status.empty()
-    
-    # Batch summary
-    if batch_results:
-        st.subheader("📈 Batch Summary")
-        
-        # Create summary DataFrame
-        summary_data = []
-        for result in batch_results:
-            summary_data.append({
-                'Filename': result['filename'],
-                'Classification': result['label'].title(),
-                'Confidence': f"{result['confidence']:.1%}",
-                'Method': result['method'].title(),
-                'Text Length': result['extracted_chars']
-            })
-        
-        summary_df = pd.DataFrame(summary_data)
-        st.dataframe(summary_df, use_container_width=True)
-        
-        # Classification distribution
-        classification_counts = pd.DataFrame(summary_data)['Classification'].value_counts()
-        if len(classification_counts) > 0:
-            fig_dist = px.pie(
-                values=classification_counts.values,
-                names=classification_counts.index,
-                title="Classification Distribution"
-            )
-            st.plotly_chart(fig_dist, use_container_width=True)
-        
-        # Download batch results
-        batch_json = {
-            "batch_summary": {
-                "total_files": len(batch_results),
-                "processed_at": datetime.now().isoformat(),
-                "results": batch_results
             }
-        }
-        
-        st.download_button(
+            
+            st.download_button(
                 label="Download Batch Results",
-            data=json.dumps(batch_json, indent=2).encode("utf-8"),
-            file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            mime="application/json",
-            help="Download all batch classification results as a JSON file"
-        )
+                data=json.dumps(batch_json, indent=2).encode("utf-8"),
+                file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json",
+                help="Download all batch classification results as a JSON file"
+            )
 
     # Manual Review Queue
     st.markdown("<br>", unsafe_allow_html=True)
@@ -955,20 +933,6 @@ if uploaded is not None:
 
     # Results section
     st.header("Classification Results")
-    
-    # Debug section for scanned documents
-    if result.get("extraction_method") and "ocr" in result.get("extraction_method", "").lower():
-        with st.expander("🔍 OCR Debug Info", expanded=False):
-            st.write(f"**Extraction Method:** {result.get('extraction_method', 'Unknown')}")
-            st.write(f"**OCR Settings:** DPI={result.get('ocr_settings', {}).get('dpi', 'N/A')}, Language={result.get('ocr_settings', {}).get('language', 'N/A')}")
-            st.write(f"**Text Length:** {result.get('extracted_chars', 0)} characters")
-            
-            extracted_text = result.get("extracted_text", "")
-            if extracted_text:
-                st.write("**Extracted Text Preview:**")
-                st.text_area("", value=extracted_text[:500] + ("..." if len(extracted_text) > 500 else ""), height=150, disabled=True)
-            else:
-                st.warning("No text was extracted from the document")
     
     # Main result display
     col1, col2, col3 = st.columns([2, 1, 1])
