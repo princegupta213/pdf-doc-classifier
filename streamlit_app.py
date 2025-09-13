@@ -620,18 +620,18 @@ if uploaded_files:
                             else:
                                 st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
                 
-                except Exception as e:
-                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
-                    # Add error result to batch
-                    error_result = {
-                        "filename": uploaded_file.name,
-                        "label": "error",
-                        "confidence": 0.0,
-                        "rationale": f"Processing error: {str(e)}",
-                        "method": "error",
-                        "extracted_chars": 0
-                    }
-                    batch_results.append(error_result)
+            except Exception as e:
+                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                # Add error result to batch
+                error_result = {
+                    "filename": uploaded_file.name,
+                    "label": "error",
+                    "confidence": 0.0,
+                    "rationale": f"Processing error: {str(e)}",
+                    "method": "error",
+                    "extracted_chars": 0
+                }
+                batch_results.append(error_result)
         
         # Clear progress indicators
         batch_progress.empty()
