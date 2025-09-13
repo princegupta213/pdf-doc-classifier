@@ -409,14 +409,60 @@ if st.sidebar.button("Add New Category"):
     st.session_state.show_add_category = True
 
 if st.session_state.get("show_add_category", False):
+    st.sidebar.header("📝 Add New Category")
     new_category = st.sidebar.text_input("Category Name", placeholder="e.g., contract, receipt")
-    if st.sidebar.button("Save Category"):
-        if new_category and new_category.strip():
-            # Add to session state
-            if 'custom_categories' not in st.session_state:
-                st.session_state.custom_categories = []
-            st.session_state.custom_categories.append(new_category.strip().lower())
-            st.sidebar.success(f"Added category: {new_category}")
+    
+    # Upload training examples for the new category
+    st.sidebar.write("**Training Examples (Optional):**")
+    training_files = st.sidebar.file_uploader(
+        "Upload training examples (PDF files)",
+        type=['pdf'],
+        accept_multiple_files=True,
+        key="new_category_training_upload",
+        help="Upload 5-10 PDF examples of this document type for better classification"
+    )
+    
+    col1, col2 = st.sidebar.columns(2)
+    with col1:
+        if st.sidebar.button("Save Category"):
+            if new_category and new_category.strip():
+                # Add to session state
+                if 'custom_categories' not in st.session_state:
+                    st.session_state.custom_categories = []
+                st.session_state.custom_categories.append(new_category.strip().lower())
+                
+                # Process training examples if provided
+                if training_files:
+                    with st.sidebar.spinner("Processing training examples..."):
+                        # Initialize custom training examples storage
+                        if 'custom_training_examples' not in st.session_state:
+                            st.session_state.custom_training_examples = {}
+                        
+                        # Process each uploaded file
+                        examples_text = []
+                        for file in training_files:
+                            try:
+                                # Extract text from PDF
+                                text = extract_text_from_pdf(file, ocr_dpi, "eng+hin")
+                                if text.strip():
+                                    examples_text.append(text.strip())
+                            except Exception as e:
+                                st.sidebar.error(f"Error processing {file.name}: {str(e)}")
+                        
+                        if examples_text:
+                            # Store training examples
+                            st.session_state.custom_training_examples[new_category.strip().lower()] = examples_text
+                            st.sidebar.success(f"Added category '{new_category}' with {len(examples_text)} training examples")
+                        else:
+                            st.sidebar.success(f"Added category '{new_category}' (no training examples processed)")
+                else:
+                    st.sidebar.success(f"Added category: {new_category}")
+                
+                st.session_state.show_add_category = False
+                st.rerun()
+    
+    with col2:
+        if st.sidebar.button("Cancel"):
             st.session_state.show_add_category = False
             st.rerun()
 
