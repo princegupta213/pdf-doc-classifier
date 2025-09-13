@@ -587,6 +587,27 @@ with col1:
                     # Show success indicator
                     st.success("Processed successfully")
                     
+                    # Add to review queue if low confidence OR ambiguous classification (same logic as single upload)
+                    rationale = result.get("rationale", "")
+                    is_ambiguous = "ambiguous: margin < 0.10" in rationale or "margin < 0.10" in rationale
+                    
+                    if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification
+                        review_item = {
+                            "filename": uploaded_file.name,
+                            "classification": label,
+                            "confidence": confidence,
+                            "rationale": rationale,
+                            "timestamp": datetime.now().isoformat(),
+                            "method": result.get("method", "")
+                        }
+                        if 'review_queue' not in st.session_state:
+                            st.session_state.review_queue = []
+                        st.session_state.review_queue.append(review_item)
+                        if is_ambiguous:
+                            st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
+                        else:
+                            st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
+                    
                 except Exception as e:
                     st.error(f"Error processing {uploaded_file.name}: {str(e)}")
                     # Add error result to batch
