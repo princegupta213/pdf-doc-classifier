@@ -565,7 +565,7 @@ if uploaded_files:
             try:
                 # Use cached processing function with OCR settings
                 centroids_hash = get_centroids_hash(centroids)
-                    result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
+                result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
                 result["filename"] = uploaded_file.name
                 
                 batch_results.append(result)
@@ -585,10 +585,10 @@ if uploaded_files:
                     st.metric("Text Length", f"{text_length:,} chars")
                 
                 # Show success indicator
-                    st.success("Processed successfully")
+                st.success("Processed successfully")
                 
             except Exception as e:
-                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
                 # Add error result to batch
                 error_result = {
                     "filename": uploaded_file.name,
