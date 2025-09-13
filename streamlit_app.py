@@ -974,34 +974,6 @@ if uploaded is not None:
 
     # Skip detailed visualizations - user requested removal
 
-    # Rationale and details
-    st.subheader("🔍 Analysis Details")
-    st.info(f"**Rationale:** {rationale}")
-    
-    # Extracted fields section removed - user requested removal
-    
-    # AI Insights section removed - user requested removal
-
-    # Tabs for additional information
-    tab1, tab2, tab3 = st.tabs(["Extracted Text", "Raw Data", "Download"])
-    
-    with tab1:
-        # Get text from result or show placeholder
-        extracted_text = result.get("extracted_text", "No text available")
-        st.text_area("Full extracted text", value=extracted_text[:100000], height=300, help="This is the text extracted from your PDF document")
-    
-    with tab2:
-        st.json(result)
-    
-    with tab3:
-        st.download_button(
-            label="Download JSON Result",
-            data=json.dumps(result, indent=2).encode("utf-8"),
-            file_name=f"classification_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            mime="application/json",
-            help="Download the complete classification results as a JSON file"
-        )
-
     # Cleanup temp file
     try:
         os.unlink(tmp_path)
