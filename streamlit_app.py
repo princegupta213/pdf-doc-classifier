@@ -400,38 +400,38 @@ ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin", "a
 # Custom Categories
 st.sidebar.header("Custom Categories")
 if st.sidebar.button("Add New Category"):
-    st.sidebar.session_state.show_add_category = True
+    st.session_state.show_add_category = True
 
-if st.sidebar.session_state.get("show_add_category", False):
+if st.session_state.get("show_add_category", False):
     new_category = st.sidebar.text_input("Category Name", placeholder="e.g., contract, receipt")
     if st.sidebar.button("Save Category"):
         if new_category and new_category.strip():
             # Add to session state
-            if 'custom_categories' not in st.sidebar.session_state:
-                st.sidebar.session_state.custom_categories = []
-            st.sidebar.session_state.custom_categories.append(new_category.strip().lower())
+            if 'custom_categories' not in st.session_state:
+                st.session_state.custom_categories = []
+            st.session_state.custom_categories.append(new_category.strip().lower())
             st.sidebar.success(f"Added category: {new_category}")
-            st.sidebar.session_state.show_add_category = False
+            st.session_state.show_add_category = False
             st.rerun()
 
 # Display custom categories
-if 'custom_categories' in st.sidebar.session_state and st.sidebar.session_state.custom_categories:
+if 'custom_categories' in st.session_state and st.session_state.custom_categories:
     st.sidebar.write("**Your Categories:**")
-    for cat in st.sidebar.session_state.custom_categories:
+    for cat in st.session_state.custom_categories:
         col1, col2 = st.sidebar.columns([3, 1])
         with col1:
             st.sidebar.write(f"• {cat.title()}")
         with col2:
             if st.sidebar.button("×", key=f"del_{cat}"):
-                st.sidebar.session_state.custom_categories.remove(cat)
+                st.session_state.custom_categories.remove(cat)
                 st.rerun()
 
 # Classification History Dashboard
 st.sidebar.header("📊 History Dashboard")
 if st.sidebar.button("View Processing History"):
-    st.sidebar.session_state.show_history = True
+    st.session_state.show_history = True
 
-if st.sidebar.session_state.get("show_history", False):
+if st.session_state.get("show_history", False):
     if st.session_state.processing_history:
         st.sidebar.write("**Recent Classifications:**")
         for i, entry in enumerate(st.session_state.processing_history[-5:]):  # Show last 5
