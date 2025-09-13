@@ -1,7 +1,5 @@
 # PDF Document Classifier
 
-**Live Demo**: [PDF Document Classifier](https://pdf-classifier-idfy.streamlit.app)
-
 ## Assignment Submission
 
 ### Deliverables
@@ -15,6 +13,7 @@
 3. **Resume** - CVs, professional profiles, job applications
 4. **ITR** - Income Tax Returns, tax documents
 5. **Government ID** - Passports, driver's licenses, identity cards
+6. **Unknown** - Documents that don't fit the above categories
 
 ### Approach
 - **Text Extraction**: PyMuPDF for PDF text + Tesseract OCR for scanned documents
@@ -24,7 +23,6 @@
 - **AI Fallback**: Google Gemini AI handles ambiguous cases (confidence 0.3-0.7)
 - **Multilingual Support**: English + Hindi OCR processing
 - **Hybrid Classification**: Combines embedding similarity with keyword-based logic
-
 ### How to Add New Categories
 1. Create a new subfolder under `class_examples/` with your category name (e.g., `class_examples/shipping_label/`)
 2. Add 10-15 short `.txt` snippets representing that category (diverse examples help)
