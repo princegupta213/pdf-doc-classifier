@@ -592,21 +592,29 @@ with col1:
                     is_ambiguous = "ambiguous: margin < 0.10" in rationale or "margin < 0.10" in rationale
                     
                     if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification
-                        review_item = {
-                            "filename": uploaded_file.name,
-                            "classification": label,
-                            "confidence": confidence,
-                            "rationale": rationale,
-                            "timestamp": datetime.now().isoformat(),
-                            "method": result.get("method", "")
-                        }
+                        # Check if this document is already in the review queue to prevent duplicates
                         if 'review_queue' not in st.session_state:
                             st.session_state.review_queue = []
-                        st.session_state.review_queue.append(review_item)
-                        if is_ambiguous:
-                            st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
+                        
+                        # Check if document is already in queue
+                        already_in_queue = any(item['filename'] == uploaded_file.name for item in st.session_state.review_queue)
+                        
+                        if not already_in_queue:
+                            review_item = {
+                                "filename": uploaded_file.name,
+                                "classification": label,
+                                "confidence": confidence,
+                                "rationale": rationale,
+                                "timestamp": datetime.now().isoformat(),
+                                "method": result.get("method", "")
+                            }
+                            st.session_state.review_queue.append(review_item)
+                            if is_ambiguous:
+                                st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
+                            else:
+                                st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
                         else:
-                            st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
+                            st.info(f"ℹ️ {uploaded_file.name} already in review queue - not adding duplicate")
                     
                 except Exception as e:
                     st.error(f"Error processing {uploaded_file.name}: {str(e)}")
@@ -808,23 +816,31 @@ if uploaded is not None:
         st.write(f"- **Current review queue size**: {current_queue_size}")
         
         if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification (temporarily raised to 50% for testing)
-            st.write("✅ **ADDING TO REVIEW QUEUE**")
-            review_item = {
-                "filename": uploaded.name,
-                "classification": label,
-                "confidence": confidence,
-                "rationale": rationale,
-                "timestamp": datetime.now().isoformat(),
-                "method": result.get("method", "")
-            }
+            # Check if this document is already in the review queue to prevent duplicates
             if 'review_queue' not in st.session_state:
                 st.session_state.review_queue = []
-            st.session_state.review_queue.append(review_item)
-            if is_ambiguous:
-                st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
+            
+            # Check if document is already in queue
+            already_in_queue = any(item['filename'] == uploaded.name for item in st.session_state.review_queue)
+            
+            if not already_in_queue:
+                st.write("✅ **ADDING TO REVIEW QUEUE**")
+                review_item = {
+                    "filename": uploaded.name,
+                    "classification": label,
+                    "confidence": confidence,
+                    "rationale": rationale,
+                    "timestamp": datetime.now().isoformat(),
+                    "method": result.get("method", "")
+                }
+                st.session_state.review_queue.append(review_item)
+                if is_ambiguous:
+                    st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
+                else:
+                    st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
+                st.write(f"📝 **Review queue now has**: {len(st.session_state.review_queue)} documents")
             else:
-                st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
-            st.write(f"📝 **Review queue now has**: {len(st.session_state.review_queue)} documents")
+                st.write("ℹ️ **Document already in review queue** - not adding duplicate")
         else:
             st.write("❌ **NOT adding to review queue** - confidence too high or not ambiguous")
         
