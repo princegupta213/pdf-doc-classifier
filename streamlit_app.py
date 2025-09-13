@@ -621,7 +621,7 @@ if uploaded_files:
                                 st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
                 
             except Exception as e:
-                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
                 # Add error result to batch
                 error_result = {
                     "filename": uploaded_file.name,
