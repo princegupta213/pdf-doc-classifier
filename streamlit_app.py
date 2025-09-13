@@ -366,7 +366,7 @@ st.sidebar.header("Configuration")
 
 # Class examples folder configuration (hidden from UI)
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
-examples_dir = default_examples
+    examples_dir = default_examples
 
 # LLM Configuration
 st.sidebar.header("AI Features")
@@ -497,7 +497,7 @@ if st.sidebar.button("View Processing History"):
     st.session_state.show_history = True
 
 if st.session_state.get("show_history", False):
-    if st.session_state.processing_history:
+if st.session_state.processing_history:
         st.sidebar.write("**Recent Classifications:**")
         for i, entry in enumerate(st.session_state.processing_history[-5:]):  # Show last 5
             timestamp = entry['timestamp'][:19].replace('T', ' ')
@@ -529,11 +529,15 @@ with col1:
         help="Upload a PDF document to classify it automatically"
     )
 
-    # Add small visual spacing
-    st.markdown("<br>", unsafe_allow_html=True)
+    # Add visual spacing - 4 lines down for batch processing text
+    st.markdown("<br><br><br><br>", unsafe_allow_html=True)
     
     # Batch processing section - moved here and positioned higher
     st.header("Batch Processing")
+    
+    # Add spacing - 8 lines up for menu (reduce spacing between header and uploader)
+    st.markdown("<br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
+    
 st.write("Upload multiple PDFs for batch classification")
 
 uploaded_files = st.file_uploader(
@@ -587,8 +591,8 @@ if uploaded_files:
                     st.metric("Confidence", f"{confidence:.1%}")
                 with col3:
                     st.metric("Text Length", f"{text_length:,} chars")
-                    
-                    # Show success indicator
+                
+                # Show success indicator
                     st.success("Processed successfully")
                     
                     # Add to review queue if low confidence OR ambiguous classification (same logic as single upload)
@@ -632,55 +636,55 @@ if uploaded_files:
                     "extracted_chars": 0
                 }
                 batch_results.append(error_result)
+    
+    # Clear progress indicators
+    batch_progress.empty()
+    batch_status.empty()
+    
+    # Batch summary
+    if batch_results:
+        st.subheader("📈 Batch Summary")
         
-        # Clear progress indicators
-        batch_progress.empty()
-        batch_status.empty()
+        # Create summary DataFrame
+        summary_data = []
+        for result in batch_results:
+            summary_data.append({
+                'Filename': result['filename'],
+                'Classification': result['label'].title(),
+                'Confidence': f"{result['confidence']:.1%}",
+                'Method': result['method'].title(),
+                'Text Length': result['extracted_chars']
+            })
         
-        # Batch summary
-        if batch_results:
-            st.subheader("📈 Batch Summary")
-            
-            # Create summary DataFrame
-            summary_data = []
-            for result in batch_results:
-                summary_data.append({
-                    'Filename': result['filename'],
-                    'Classification': result['label'].title(),
-                    'Confidence': f"{result['confidence']:.1%}",
-                    'Method': result['method'].title(),
-                    'Text Length': result['extracted_chars']
-                })
-            
-            summary_df = pd.DataFrame(summary_data)
-            st.dataframe(summary_df, use_container_width=True)
-            
-            # Classification distribution
-            classification_counts = pd.DataFrame(summary_data)['Classification'].value_counts()
-            if len(classification_counts) > 0:
-                fig_dist = px.pie(
-                    values=classification_counts.values,
-                    names=classification_counts.index,
-                    title="Classification Distribution"
-                )
-                st.plotly_chart(fig_dist, use_container_width=True)
-            
-            # Download batch results
-            batch_json = {
-                "batch_summary": {
-                    "total_files": len(batch_results),
-                    "processed_at": datetime.now().isoformat(),
-                    "results": batch_results
-                }
-            }
-            
-            st.download_button(
-                label="Download Batch Results",
-                data=json.dumps(batch_json, indent=2).encode("utf-8"),
-                file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                mime="application/json",
-                help="Download all batch classification results as a JSON file"
+        summary_df = pd.DataFrame(summary_data)
+        st.dataframe(summary_df, use_container_width=True)
+        
+        # Classification distribution
+        classification_counts = pd.DataFrame(summary_data)['Classification'].value_counts()
+        if len(classification_counts) > 0:
+            fig_dist = px.pie(
+                values=classification_counts.values,
+                names=classification_counts.index,
+                title="Classification Distribution"
             )
+            st.plotly_chart(fig_dist, use_container_width=True)
+        
+        # Download batch results
+        batch_json = {
+            "batch_summary": {
+                "total_files": len(batch_results),
+                "processed_at": datetime.now().isoformat(),
+                "results": batch_results
+            }
+        }
+        
+        st.download_button(
+                label="Download Batch Results",
+            data=json.dumps(batch_json, indent=2).encode("utf-8"),
+            file_name=f"batch_classification_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+            mime="application/json",
+            help="Download all batch classification results as a JSON file"
+        )
 
     # Manual Review Queue
     st.markdown("<br>", unsafe_allow_html=True)
