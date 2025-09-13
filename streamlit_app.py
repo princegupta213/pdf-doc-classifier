@@ -366,7 +366,7 @@ st.sidebar.header("Configuration")
 
 # Class examples folder configuration (hidden from UI)
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
-    examples_dir = default_examples
+examples_dir = default_examples
 
 # LLM Configuration
 st.sidebar.header("AI Features")
