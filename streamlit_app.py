@@ -685,7 +685,10 @@ with col1:
     if st.session_state.review_queue:
         st.write(f"**{len(st.session_state.review_queue)} documents need review:**")
         
-        for i, item in enumerate(st.session_state.review_queue):
+        # Create a copy of the queue to avoid index issues when removing items
+        queue_items = list(st.session_state.review_queue)
+        
+        for i, item in enumerate(queue_items):
             with st.expander(f"📄 {item['filename']} - {item['classification'].title()} ({item['confidence']:.1%})", expanded=False):
                 col1, col2 = st.columns([2, 1])
                 
@@ -700,23 +703,24 @@ with col1:
                         "Select correct category:",
                         ["invoice", "bank_statement", "resume", "ITR", "government_id", "unknown"] + 
                         (st.session_state.get('custom_categories', [])),
-                        key=f"correct_{i}"
+                        key=f"correct_{item['filename']}_{i}"  # Use filename to make key unique
                     )
                     
-                    if st.button(f"Update Classification", key=f"update_{i}"):
+                    if st.button(f"Update Classification", key=f"update_{item['filename']}_{i}"):
                         # Update the classification
                         item['corrected_classification'] = corrected_class
                         item['manually_reviewed'] = True
                         item['review_timestamp'] = datetime.now().isoformat()
                         
-                        # Remove from queue
-                        st.session_state.review_queue.pop(i)
+                        # Remove from queue by finding the item
+                        st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
                         st.success(f"Updated classification to: {corrected_class.title()}")
                         st.rerun()
                 
                 with col2:
-                    if st.button(f"Remove from Queue", key=f"remove_{i}"):
-                        st.session_state.review_queue.pop(i)
+                    if st.button(f"Remove from Queue", key=f"remove_{item['filename']}_{i}"):
+                        # Remove from queue by finding the item
+                        st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
                         st.rerun()
     else:
         st.info("No documents in review queue. Low-confidence results (< 50% - temporarily raised for testing) and ambiguous classifications (margin < 10%) will appear here automatically.")
