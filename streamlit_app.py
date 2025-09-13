@@ -618,7 +618,7 @@ if uploaded_files:
                             st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
                 
             except Exception as e:
-                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
                 # Add error result to batch
                 error_result = {
                     "filename": uploaded_file.name,
