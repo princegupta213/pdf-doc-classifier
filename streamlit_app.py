@@ -766,7 +766,7 @@ if uploaded is not None:
         
         # Add to review queue if low confidence OR ambiguous classification
         is_ambiguous = "ambiguous: margin < 0.10" in rationale or "margin < 0.10" in rationale
-        if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification
+        if confidence < 0.3 or is_ambiguous:  # Low confidence OR ambiguous classification
             review_item = {
                 "filename": uploaded.name,
                 "classification": label,
