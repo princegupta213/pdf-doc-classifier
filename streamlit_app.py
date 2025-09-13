@@ -567,38 +567,38 @@ with col1:
                     centroids_hash = get_centroids_hash(centroids)
                     result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
                     result["filename"] = uploaded_file.name
-                    
-                    batch_results.append(result)
-                    
-                    # Display result for this file
-                    label = result.get("label", "unknown")
-                    confidence = float(result.get("confidence", 0.0))
-                    text_length = result.get("extracted_chars", 0)
-                    
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
+                
+                batch_results.append(result)
+                
+                # Display result for this file
+                label = result.get("label", "unknown")
+                confidence = float(result.get("confidence", 0.0))
+                text_length = result.get("extracted_chars", 0)
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
                         fallback_text = " (LLM Fallback)" if result.get("llm_fallback") else ""
                         st.metric("Classification", f"{label.title()}{fallback_text}")
-                    with col2:
-                        st.metric("Confidence", f"{confidence:.1%}")
-                    with col3:
-                        st.metric("Text Length", f"{text_length:,} chars")
-                    
-                    # Show success indicator
-                    st.success("Processed successfully")
-                    
-                except Exception as e:
-                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
-                    # Add error result to batch
-                    error_result = {
-                        "filename": uploaded_file.name,
-                        "label": "error",
-                        "confidence": 0.0,
-                        "rationale": f"Processing error: {str(e)}",
-                        "method": "error",
-                        "extracted_chars": 0
-                    }
-                    batch_results.append(error_result)
+                with col2:
+                    st.metric("Confidence", f"{confidence:.1%}")
+                with col3:
+                    st.metric("Text Length", f"{text_length:,} chars")
+                
+                # Show success indicator
+                st.success("Processed successfully")
+                
+            except Exception as e:
+                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                # Add error result to batch
+                error_result = {
+                    "filename": uploaded_file.name,
+                    "label": "error",
+                    "confidence": 0.0,
+                    "rationale": f"Processing error: {str(e)}",
+                    "method": "error",
+                    "extracted_chars": 0
+                }
+                batch_results.append(error_result)
     
     # Clear progress indicators
     batch_progress.empty()
