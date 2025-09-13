@@ -657,6 +657,9 @@ with col1:
     if 'review_queue' not in st.session_state:
         st.session_state.review_queue = []
     
+    # Debug: Show current review queue status
+    st.write(f"🔍 **Review Queue Status:** {len(st.session_state.review_queue)} documents")
+    
     # Show review queue
     if st.session_state.review_queue:
         st.write(f"**{len(st.session_state.review_queue)} documents need review:**")
@@ -696,6 +699,22 @@ with col1:
                         st.rerun()
     else:
         st.info("No documents in review queue. Low-confidence results (< 30%) and ambiguous classifications (margin < 10%) will appear here automatically.")
+        
+        # Test button to add a sample document to review queue
+        if st.button("🧪 Add Test Document to Review Queue"):
+            test_item = {
+                "filename": "test_document.pdf",
+                "classification": "unknown",
+                "confidence": 0.25,  # 25% - below 30% threshold
+                "rationale": "test document with low confidence",
+                "timestamp": datetime.now().isoformat(),
+                "method": "test"
+            }
+            if 'review_queue' not in st.session_state:
+                st.session_state.review_queue = []
+            st.session_state.review_queue.append(test_item)
+            st.success("✅ Test document added to review queue!")
+            st.rerun()
 
 with col2:
     st.header("ℹ️ About")
