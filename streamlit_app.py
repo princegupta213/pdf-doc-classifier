@@ -89,6 +89,25 @@ def enhance_with_gemini(text: str, classification: dict, model) -> dict:
         return classification
 
 
+def detect_document_language(text: str) -> str:
+    """Detect the primary language of the document text."""
+    if not text or len(text.strip()) < 10:
+        return "eng"  # Default to English
+    
+    # Simple language detection based on character patterns
+    text_lower = text.lower()
+    
+    # Hindi detection (Devanagari script)
+    hindi_chars = sum(1 for char in text if '\u0900' <= char <= '\u097F')
+    total_chars = len([c for c in text if c.isalpha()])
+    
+    if total_chars > 0 and (hindi_chars / total_chars) > 0.1:
+        return "hin"
+    elif total_chars > 0 and (hindi_chars / total_chars) > 0.05:
+        return "eng+hin"  # Mixed content
+    else:
+        return "eng"  # Primarily English
+
 def enhance_with_gemini_fallback(text: str, result: Dict, model) -> Dict:
     """Use Gemini AI to re-classify unknown documents with good confidence."""
     try:
@@ -376,7 +395,58 @@ else:
 # OCR Configuration
 st.sidebar.header("OCR Settings")
 ocr_dpi = st.sidebar.slider("OCR DPI", min_value=150, max_value=600, value=300, help="Higher DPI = better quality but slower")
-ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin"], help="Language for OCR processing")
+ocr_language = st.sidebar.selectbox("OCR Language", ["eng+hin", "eng", "hin", "auto-detect"], help="Language for OCR processing")
+
+# Custom Categories
+st.sidebar.header("Custom Categories")
+if st.sidebar.button("Add New Category"):
+    st.sidebar.session_state.show_add_category = True
+
+if st.sidebar.session_state.get("show_add_category", False):
+    new_category = st.sidebar.text_input("Category Name", placeholder="e.g., contract, receipt")
+    if st.sidebar.button("Save Category"):
+        if new_category and new_category.strip():
+            # Add to session state
+            if 'custom_categories' not in st.sidebar.session_state:
+                st.sidebar.session_state.custom_categories = []
+            st.sidebar.session_state.custom_categories.append(new_category.strip().lower())
+            st.sidebar.success(f"Added category: {new_category}")
+            st.sidebar.session_state.show_add_category = False
+            st.rerun()
+
+# Display custom categories
+if 'custom_categories' in st.sidebar.session_state and st.sidebar.session_state.custom_categories:
+    st.sidebar.write("**Your Categories:**")
+    for cat in st.sidebar.session_state.custom_categories:
+        col1, col2 = st.sidebar.columns([3, 1])
+        with col1:
+            st.sidebar.write(f"• {cat.title()}")
+        with col2:
+            if st.sidebar.button("×", key=f"del_{cat}"):
+                st.sidebar.session_state.custom_categories.remove(cat)
+                st.rerun()
+
+# Classification History Dashboard
+st.sidebar.header("📊 History Dashboard")
+if st.sidebar.button("View Processing History"):
+    st.sidebar.session_state.show_history = True
+
+if st.sidebar.session_state.get("show_history", False):
+    if st.session_state.processing_history:
+        st.sidebar.write("**Recent Classifications:**")
+        for i, entry in enumerate(st.session_state.processing_history[-5:]):  # Show last 5
+            timestamp = entry['timestamp'][:19].replace('T', ' ')
+            st.sidebar.write(f"**{entry['filename']}**")
+            st.sidebar.write(f"→ {entry['classification'].title()}")
+            st.sidebar.write(f"Confidence: {entry['confidence']:.1%}")
+            st.sidebar.write(f"Time: {timestamp}")
+            st.sidebar.write("---")
+    else:
+        st.sidebar.info("No processing history yet")
+    
+    if st.sidebar.button("Clear History"):
+        st.session_state.processing_history = []
+        st.rerun()
 
 # Load model and centroids
 with st.spinner("Loading AI model and building class centroids..."):
@@ -514,6 +584,54 @@ with col1:
                 help="Download all batch classification results as a JSON file"
             )
 
+    # Manual Review Queue
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.header("🔍 Manual Review Queue")
+    
+    # Initialize review queue in session state
+    if 'review_queue' not in st.session_state:
+        st.session_state.review_queue = []
+    
+    # Show review queue
+    if st.session_state.review_queue:
+        st.write(f"**{len(st.session_state.review_queue)} documents need review:**")
+        
+        for i, item in enumerate(st.session_state.review_queue):
+            with st.expander(f"📄 {item['filename']} - {item['classification'].title()} ({item['confidence']:.1%})", expanded=False):
+                col1, col2 = st.columns([2, 1])
+                
+                with col1:
+                    st.write(f"**Current Classification:** {item['classification'].title()}")
+                    st.write(f"**Confidence:** {item['confidence']:.1%}")
+                    st.write(f"**Reason:** {item.get('rationale', 'No reason provided')}")
+                    
+                    # Manual correction
+                    st.write("**Correct Classification:**")
+                    corrected_class = st.selectbox(
+                        "Select correct category:",
+                        ["invoice", "bank_statement", "resume", "ITR", "government_id", "unknown"] + 
+                        (st.session_state.get('custom_categories', [])),
+                        key=f"correct_{i}"
+                    )
+                    
+                    if st.button(f"Update Classification", key=f"update_{i}"):
+                        # Update the classification
+                        item['corrected_classification'] = corrected_class
+                        item['manually_reviewed'] = True
+                        item['review_timestamp'] = datetime.now().isoformat()
+                        
+                        # Remove from queue
+                        st.session_state.review_queue.pop(i)
+                        st.success(f"Updated classification to: {corrected_class.title()}")
+                        st.rerun()
+                
+                with col2:
+                    if st.button(f"Remove from Queue", key=f"remove_{i}"):
+                        st.session_state.review_queue.pop(i)
+                        st.rerun()
+    else:
+        st.info("No documents in review queue. Low-confidence results will appear here automatically.")
+
 with col2:
     st.header("ℹ️ About")
     st.info("""
@@ -544,9 +662,18 @@ if uploaded is not None:
         status_text.text("🔄 Processing PDF...")
         progress_bar.progress(25)
         
+        # Handle auto-detect language
+        actual_ocr_language = ocr_language
+        if ocr_language == "auto-detect":
+            # First extract text to detect language
+            temp_result = process_single_pdf(uploaded.read(), get_centroids_hash(centroids), ocr_dpi, "eng")
+            detected_lang = detect_document_language(temp_result.get("extracted_text", ""))
+            actual_ocr_language = detected_lang
+            st.info(f"🔍 Auto-detected language: {detected_lang}")
+        
         # Use cached processing function with OCR settings
         centroids_hash = get_centroids_hash(centroids)
-        result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, ocr_language)
+        result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, actual_ocr_language)
         # fields extraction removed - not used in current version
         
         status_text.text("Classification complete!")
@@ -571,6 +698,21 @@ if uploaded is not None:
             "text_length": result.get("extracted_chars", 0)
         }
         st.session_state.processing_history.append(history_entry)
+        
+        # Add to review queue if low confidence
+        if confidence < 0.5:  # Low confidence threshold
+            review_item = {
+                "filename": uploaded.name,
+                "classification": label,
+                "confidence": confidence,
+                "rationale": rationale,
+                "timestamp": datetime.now().isoformat(),
+                "method": result.get("method", "")
+            }
+            if 'review_queue' not in st.session_state:
+                st.session_state.review_queue = []
+            st.session_state.review_queue.append(review_item)
+            st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
         
     except Exception as e:
         progress_bar.empty()
