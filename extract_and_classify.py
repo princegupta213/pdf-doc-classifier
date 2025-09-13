@@ -219,6 +219,56 @@ def build_class_centroids(class_examples_folder: str, model=None) -> Dict[str, n
     return centroids
 
 
+def build_custom_centroids(custom_training_examples: Dict[str, List[str]], model=None) -> Dict[str, np.ndarray]:
+    """Compute centroid embedding for custom categories from uploaded training examples.
+    
+    Args:
+        custom_training_examples: Dict mapping category names to lists of text examples
+        model: SentenceTransformer model (optional)
+    
+    Returns:
+        Dict mapping category names to centroid embeddings
+    """
+    if model is None:
+        model = _get_embedding_model()
+    
+    centroids: Dict[str, np.ndarray] = {}
+    
+    for category, examples in custom_training_examples.items():
+        if not examples:
+            continue
+            
+        # Clean and filter examples
+        cleaned_examples = [clean_text(ex) for ex in examples if clean_text(ex)]
+        if not cleaned_examples:
+            continue
+            
+        try:
+            # Generate embeddings for all examples
+            embeddings = model.encode(
+                cleaned_examples, 
+                show_progress_bar=False, 
+                convert_to_numpy=True, 
+                normalize_embeddings=True
+            )
+            
+            # Compute centroid
+            centroid = np.mean(embeddings, axis=0)
+            
+            # Normalize centroid
+            norm = np.linalg.norm(centroid)
+            if norm != 0:
+                centroid = centroid / norm
+                
+            centroids[category] = centroid.astype(np.float32)
+            
+        except Exception as e:
+            print(f"Error building centroid for custom category '{category}': {e}")
+            continue
+    
+    return centroids
+
+
 def _keyword_boosts() -> Dict[str, List[str]]:
     return {
         "invoice": [
@@ -415,10 +465,15 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
     return result
 
 
-def extract_and_classify(pdf_path: str, class_examples_folder: str) -> Dict:
+def extract_and_classify(pdf_path: str, class_examples_folder: str, custom_training_examples: Dict[str, List[str]] = None) -> Dict:
     """High-level helper: extract text (PDF), build/load centroids, classify."""
     model = _get_embedding_model()
     centroids = build_class_centroids(class_examples_folder, model=model)
+    
+    # Add custom centroids if provided
+    if custom_training_examples:
+        custom_centroids = build_custom_centroids(custom_training_examples, model=model)
+        centroids.update(custom_centroids)
 
     # Try PyMuPDF first
     text, method = "", ""

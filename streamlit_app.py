@@ -258,10 +258,16 @@ st.markdown("""
 
 
 @st.cache_resource(show_spinner=True)
-def get_model_and_centroids(class_examples_folder: str):
+def get_model_and_centroids(class_examples_folder: str, custom_training_examples: Dict[str, List[str]] = None):
     """Cache the model and centroids to avoid reloading on every interaction."""
     model = _get_embedding_model()
     centroids = build_class_centroids(class_examples_folder, model=model)
+    
+    # Add custom centroids if provided
+    if custom_training_examples:
+        custom_centroids = build_custom_centroids(custom_training_examples, model=model)
+        centroids.update(custom_centroids)
+    
     return model, centroids
 
 def get_centroids_hash(centroids: dict) -> str:
@@ -270,10 +276,10 @@ def get_centroids_hash(centroids: dict) -> str:
     return hashlib.md5(centroids_str.encode()).hexdigest()
 
 @st.cache_data(show_spinner=True, ttl=3600)  # Cache for 1 hour
-def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 300, ocr_lang: str = 'eng+hin') -> dict:
+def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 300, ocr_lang: str = 'eng+hin', custom_training_examples: Dict[str, List[str]] = None) -> dict:
     """Cache individual PDF processing  based on file content and centroids."""
     # Get the model and centroids (these are cached separately)
-    model, centroids = get_model_and_centroids(examples_dir)
+    model, centroids = get_model_and_centroids(examples_dir, custom_training_examples)
     
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
         tmp.write(file_content)
@@ -414,17 +420,76 @@ if st.session_state.get("show_add_category", False):
             st.session_state.show_add_category = False
             st.rerun()
 
-# Display custom categories
+# Display custom categories with training examples management
 if 'custom_categories' in st.session_state and st.session_state.custom_categories:
     st.sidebar.write("**Your Categories:**")
     for cat in st.session_state.custom_categories:
-        col1, col2 = st.sidebar.columns([3, 1])
+        col1, col2, col3 = st.sidebar.columns([2, 1, 1])
         with col1:
             st.sidebar.write(f"• {cat.title()}")
         with col2:
+            if st.sidebar.button("📚", key=f"train_{cat}", help="Add training examples"):
+                st.session_state.selected_custom_category = cat
+                st.session_state.show_training_upload = True
+        with col3:
             if st.sidebar.button("×", key=f"del_{cat}"):
                 st.session_state.custom_categories.remove(cat)
+                # Also remove training examples if they exist
+                if 'custom_training_examples' in st.session_state:
+                    st.session_state.custom_training_examples.pop(cat, None)
                 st.rerun()
+
+# Training examples upload for custom categories
+if st.session_state.get("show_training_upload", False):
+    st.sidebar.header("📚 Add Training Examples")
+    selected_cat = st.session_state.get("selected_custom_category", "")
+    st.sidebar.write(f"**Category:** {selected_cat.title()}")
+    
+    # Upload training examples
+    training_files = st.sidebar.file_uploader(
+        "Upload training examples (PDF files)",
+        type=['pdf'],
+        accept_multiple_files=True,
+        key="custom_training_upload",
+        help="Upload 5-10 PDF examples of this document type for better classification"
+    )
+    
+    if training_files:
+        if st.sidebar.button("Process Training Examples"):
+            with st.sidebar.spinner("Processing training examples..."):
+                # Initialize custom training examples storage
+                if 'custom_training_examples' not in st.session_state:
+                    st.session_state.custom_training_examples = {}
+                
+                # Process each uploaded file
+                examples_text = []
+                for file in training_files:
+                    try:
+                        # Extract text from PDF
+                        text = extract_text_from_pdf(file, ocr_dpi, "eng+hin")
+                        if text.strip():
+                            examples_text.append(text.strip())
+                    except Exception as e:
+                        st.sidebar.error(f"Error processing {file.name}: {str(e)}")
+                
+                if examples_text:
+                    # Store training examples
+                    st.session_state.custom_training_examples[selected_cat] = examples_text
+                    st.sidebar.success(f"Added {len(examples_text)} training examples for {selected_cat}")
+                    st.session_state.show_training_upload = False
+                    st.rerun()
+                else:
+                    st.sidebar.error("No text extracted from uploaded files")
+    
+    if st.sidebar.button("Cancel"):
+        st.session_state.show_training_upload = False
+        st.rerun()
+
+# Display training examples count
+if 'custom_training_examples' in st.session_state and st.session_state.custom_training_examples:
+    st.sidebar.write("**Training Examples:**")
+    for cat, examples in st.session_state.custom_training_examples.items():
+        st.sidebar.write(f"• {cat.title()}: {len(examples)} examples")
 
 # Classification History Dashboard
 st.sidebar.header("📊 History Dashboard")
@@ -500,7 +565,7 @@ with col1:
                 try:
                     # Use cached processing function with OCR settings
                     centroids_hash = get_centroids_hash(centroids)
-                    result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language)
+                    result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
                     result["filename"] = uploaded_file.name
                     
                     batch_results.append(result)
@@ -666,14 +731,14 @@ if uploaded is not None:
         actual_ocr_language = ocr_language
         if ocr_language == "auto-detect":
             # First extract text to detect language
-            temp_result = process_single_pdf(uploaded.read(), get_centroids_hash(centroids), ocr_dpi, "eng")
+            temp_result = process_single_pdf(uploaded.read(), get_centroids_hash(centroids), ocr_dpi, "eng", st.session_state.get('custom_training_examples', {}))
             detected_lang = detect_document_language(temp_result.get("extracted_text", ""))
             actual_ocr_language = detected_lang
             st.info(f"🔍 Auto-detected language: {detected_lang}")
         
         # Use cached processing function with OCR settings
         centroids_hash = get_centroids_hash(centroids)
-        result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, actual_ocr_language)
+        result = process_single_pdf(uploaded.read(), centroids_hash, ocr_dpi, actual_ocr_language, st.session_state.get('custom_training_examples', {}))
         # fields extraction removed - not used in current version
         
         status_text.text("Classification complete!")
