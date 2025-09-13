@@ -698,7 +698,7 @@ with col1:
                         st.session_state.review_queue.pop(i)
                         st.rerun()
     else:
-        st.info("No documents in review queue. Low-confidence results (< 30%) and ambiguous classifications (margin < 10%) will appear here automatically.")
+        st.info("No documents in review queue. Low-confidence results (< 50% - temporarily raised for testing) and ambiguous classifications (margin < 10%) will appear here automatically.")
 
 with col2:
     st.header("ℹ️ About")
@@ -775,9 +775,9 @@ if uploaded is not None:
             st.write(f"- Confidence: {confidence:.3f} ({'< 30%' if confidence < 0.3 else '≥ 30%'})")
             st.write(f"- Ambiguous: {is_ambiguous}")
             st.write(f"- Rationale: {rationale}")
-            st.write(f"- Would be added to review queue: {confidence < 0.3 or is_ambiguous}")
+            st.write(f"- Would be added to review queue: {confidence < 0.5 or is_ambiguous}")
         
-        if confidence < 0.3 or is_ambiguous:  # Low confidence OR ambiguous classification
+        if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification (temporarily raised to 50% for testing)
             review_item = {
                 "filename": uploaded.name,
                 "classification": label,
