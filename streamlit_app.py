@@ -539,8 +539,14 @@ if 'custom_training_examples' in st.session_state and st.session_state.custom_tr
 
 # Classification History Dashboard
 st.sidebar.header("📊 History Dashboard")
-if st.sidebar.button("View Processing History"):
-    st.session_state.show_history = True
+if st.session_state.get("show_history", False):
+    if st.sidebar.button("Hide Processing History"):
+        st.session_state.show_history = False
+        st.rerun()
+else:
+    if st.sidebar.button("View Processing History"):
+        st.session_state.show_history = True
+        st.rerun()
 
 if st.session_state.get("show_history", False):
     if st.session_state.processing_history:
