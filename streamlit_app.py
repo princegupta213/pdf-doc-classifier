@@ -530,7 +530,7 @@ with col1:
     )
 
     # Add visual spacing
-    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
     
     # Batch processing section - moved here
     st.header("Batch Processing")
