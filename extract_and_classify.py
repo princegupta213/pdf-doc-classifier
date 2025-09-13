@@ -383,9 +383,11 @@ def classify_text(text: str, centroids: Dict[str, np.ndarray], model=None) -> Di
 
     # Apply thresholds and tie-break with smart confidence adjustment
     if best_score < 0.30:
-        label = "unknown"
+        # For very low scores, still use the best match but mark as low confidence
+        # This allows LLM fallback to work on scanned documents
+        label = best_label if best_score > 0.05 else "unknown"  # Only use "unknown" for extremely low scores
         conf_bucket = "unknown"
-        rationale_parts.append("below low threshold")
+        rationale_parts.append(f"low similarity ({best_score:.3f}) - may need LLM review")
     elif (best_score - second_score) < 0.10:
         # Check if the best match has strong keyword indicators
         keyword_boosts = _keyword_boosts()

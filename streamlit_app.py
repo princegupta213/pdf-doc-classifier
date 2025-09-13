@@ -311,12 +311,14 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
     confidence = result.get("confidence", 0.0)
     label = result.get("label", "unknown")
     
-    # Use LLM for medium confidence OR for unknown documents with medium/high confidence
+    # Use LLM for medium confidence OR for low confidence cases (including scanned documents)
     should_use_llm = (
         enable_llm_enhancement and gemini_model and len(text.strip()) > 50 and (
             (0.3 <= confidence <= 0.7) or  # Medium confidence range
             (label == "unknown" and confidence >= 0.3) or  # Unknown but medium/high confidence fallback
-            (label == "unknown" and "ambiguous" in result.get("rationale", ""))  # Ambiguous cases with good confidence
+            (label == "unknown" and "ambiguous" in result.get("rationale", "")) or  # Ambiguous cases with good confidence
+            (confidence < 0.3 and label != "unknown") or  # Low confidence but has a classification (scanned docs)
+            (confidence < 0.1 and len(text.strip()) > 100)  # Very low confidence but substantial text (OCR issues)
         )
     )
     
@@ -325,6 +327,14 @@ def process_single_pdf(file_content: bytes, centroids_hash: str, ocr_dpi: int = 
             # Special fallback for unknown documents with good confidence
             result = enhance_with_gemini_fallback(text, result, gemini_model)
             result["llm_reason"] = f"Unknown classification with {confidence:.2f} confidence - using LLM fallback"
+        elif confidence < 0.3 and label != "unknown":
+            # Low confidence but has classification (likely scanned document)
+            result = enhance_with_gemini_fallback(text, result, gemini_model)
+            result["llm_reason"] = f"Low confidence ({confidence:.2f}) - using LLM to improve classification"
+        elif confidence < 0.1 and len(text.strip()) > 100:
+            # Very low confidence with substantial text (OCR quality issues)
+            result = enhance_with_gemini_fallback(text, result, gemini_model)
+            result["llm_reason"] = f"Very low confidence ({confidence:.2f}) - using LLM for OCR text analysis"
         else:
             # Regular medium confidence enhancement
             result = enhance_with_gemini(text, result, gemini_model)
