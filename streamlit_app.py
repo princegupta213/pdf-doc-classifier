@@ -366,7 +366,7 @@ st.sidebar.header("Configuration")
 
 # Class examples folder configuration (hidden from UI)
 default_examples = os.path.join(os.path.dirname(__file__), "class_examples")
-examples_dir = default_examples
+    examples_dir = default_examples
 
 # LLM Configuration
 st.sidebar.header("AI Features")
@@ -497,7 +497,7 @@ if st.sidebar.button("View Processing History"):
     st.session_state.show_history = True
 
 if st.session_state.get("show_history", False):
-    if st.session_state.processing_history:
+if st.session_state.processing_history:
         st.sidebar.write("**Recent Classifications:**")
         for i, entry in enumerate(st.session_state.processing_history[-5:]):  # Show last 5
             timestamp = entry['timestamp'][:19].replace('T', ' ')
@@ -563,13 +563,13 @@ if uploaded_files:
         
         with st.expander(f"📄 {uploaded_file.name}", expanded=False):
             try:
-                # Store PDF content for potential review queue use
-                file_pdf_content = uploaded_file.read()
-                uploaded_file.seek(0)  # Reset file pointer for processing
-                
+                    # Store PDF content for potential review queue use
+                    file_pdf_content = uploaded_file.read()
+                    uploaded_file.seek(0)  # Reset file pointer for processing
+                    
                 # Use cached processing function with OCR settings
                 centroids_hash = get_centroids_hash(centroids)
-                result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
+                    result = process_single_pdf(file_pdf_content, centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
                 result["filename"] = uploaded_file.name
                 
                 batch_results.append(result)
@@ -618,7 +618,7 @@ if uploaded_files:
                             st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
                 
             except Exception as e:
-                st.error(f"Error processing {uploaded_file.name}: {str(e)}")
+                    st.error(f"Error processing {uploaded_file.name}: {str(e)}")
                 # Add error result to batch
                 error_result = {
                     "filename": uploaded_file.name,
