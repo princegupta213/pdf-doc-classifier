@@ -591,7 +591,7 @@ with col1:
                     rationale = result.get("rationale", "")
                     is_ambiguous = "ambiguous: margin < 0.10" in rationale or "margin < 0.10" in rationale
                     
-                    if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification
+                    if confidence < 0.3 or is_ambiguous:  # Low confidence OR ambiguous classification
                         # Check if this document is already in the review queue to prevent duplicates
                         if 'review_queue' not in st.session_state:
                             st.session_state.review_queue = []
@@ -613,8 +613,6 @@ with col1:
                                 st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
                             else:
                                 st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
-                        else:
-                            st.info(f"ℹ️ {uploaded_file.name} already in review queue - not adding duplicate")
                     
                 except Exception as e:
                     st.error(f"Error processing {uploaded_file.name}: {str(e)}")
@@ -731,7 +729,7 @@ with col1:
                         st.session_state.review_queue = [x for x in st.session_state.review_queue if x != item]
                         st.rerun()
     else:
-        st.info("No documents in review queue. Low-confidence results (< 50% - temporarily raised for testing) and ambiguous classifications (margin < 10%) will appear here automatically.")
+        st.info("No documents in review queue. Low-confidence results (< 30%) and ambiguous classifications (margin < 10%) will appear here automatically.")
 
 with col2:
     st.header("ℹ️ About")
@@ -803,19 +801,8 @@ if uploaded is not None:
         # Add to review queue if low confidence OR ambiguous classification
         is_ambiguous = "ambiguous: margin < 0.10" in rationale or "margin < 0.10" in rationale
         
-        # Debug information (temporary - remove after testing)
-        st.write("🔍 **Debug Info:**")
-        st.write(f"- **Confidence**: {confidence:.3f} ({'< 50%' if confidence < 0.5 else '≥ 50%'})")
-        st.write(f"- **Ambiguous**: {is_ambiguous}")
-        st.write(f"- **Rationale**: {rationale}")
-        st.write(f"- **Review Queue Check**: confidence < 0.5 = {confidence < 0.5}, is_ambiguous = {is_ambiguous}")
-        st.write(f"- **Will be added to review queue**: {confidence < 0.5 or is_ambiguous}")
         
-        # Show current review queue status
-        current_queue_size = len(st.session_state.get('review_queue', []))
-        st.write(f"- **Current review queue size**: {current_queue_size}")
-        
-        if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification (temporarily raised to 50% for testing)
+        if confidence < 0.3 or is_ambiguous:  # Low confidence OR ambiguous classification
             # Check if this document is already in the review queue to prevent duplicates
             if 'review_queue' not in st.session_state:
                 st.session_state.review_queue = []
@@ -824,7 +811,6 @@ if uploaded is not None:
             already_in_queue = any(item['filename'] == uploaded.name for item in st.session_state.review_queue)
             
             if not already_in_queue:
-                st.write("✅ **ADDING TO REVIEW QUEUE**")
                 review_item = {
                     "filename": uploaded.name,
                     "classification": label,
@@ -838,11 +824,6 @@ if uploaded is not None:
                     st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
                 else:
                     st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
-                st.write(f"📝 **Review queue now has**: {len(st.session_state.review_queue)} documents")
-            else:
-                st.write("ℹ️ **Document already in review queue** - not adding duplicate")
-        else:
-            st.write("❌ **NOT adding to review queue** - confidence too high or not ambiguous")
         
     except Exception as e:
         progress_bar.empty()
