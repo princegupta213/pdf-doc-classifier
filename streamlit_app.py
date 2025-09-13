@@ -530,43 +530,43 @@ with col1:
     )
 
     # Add visual spacing
-    st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
     # Batch processing section - moved here
     st.header("Batch Processing")
-st.write("Upload multiple PDFs for batch classification")
+    st.write("Upload multiple PDFs for batch classification")
 
-uploaded_files = st.file_uploader(
-    "Choose multiple PDF files", 
-    type=["pdf"],
-    accept_multiple_files=True,
-    help="Select multiple PDF files to process them all at once"
-)
+    uploaded_files = st.file_uploader(
+        "Choose multiple PDF files", 
+        type=["pdf"],
+        accept_multiple_files=True,
+        help="Select multiple PDF files to process them all at once"
+    )
 
     # Batch processing logic
-if uploaded_files:
-    st.write(f"📊 Processing {len(uploaded_files)} files...")
-    
-    # Create a container for batch results
-    batch_results = []
-    
-    # Process each file with progress tracking
-    progress_container = st.container()
-    with progress_container:
-        batch_progress = st.progress(0)
-        batch_status = st.empty()
-    
-    # Process each file
-    for i, uploaded_file in enumerate(uploaded_files):
-        batch_status.text(f"Processing {i+1}/{len(uploaded_files)}: {uploaded_file.name}")
-        batch_progress.progress((i + 1) / len(uploaded_files))
+    if uploaded_files:
+        st.write(f"📊 Processing {len(uploaded_files)} files...")
         
-        with st.expander(f"📄 {uploaded_file.name}", expanded=False):
-            try:
-                # Use cached processing function with OCR settings
-                centroids_hash = get_centroids_hash(centroids)
-                result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
-                result["filename"] = uploaded_file.name
+        # Create a container for batch results
+        batch_results = []
+        
+        # Process each file with progress tracking
+        progress_container = st.container()
+        with progress_container:
+            batch_progress = st.progress(0)
+            batch_status = st.empty()
+        
+        # Process each file
+        for i, uploaded_file in enumerate(uploaded_files):
+            batch_status.text(f"Processing {i+1}/{len(uploaded_files)}: {uploaded_file.name}")
+            batch_progress.progress((i + 1) / len(uploaded_files))
+            
+            with st.expander(f"📄 {uploaded_file.name}", expanded=False):
+                try:
+                    # Use cached processing function with OCR settings
+                    centroids_hash = get_centroids_hash(centroids)
+                    result = process_single_pdf(uploaded_file.read(), centroids_hash, ocr_dpi, ocr_language, st.session_state.get('custom_training_examples', {}))
+                    result["filename"] = uploaded_file.name
                 
                 batch_results.append(result)
                 
