@@ -771,13 +771,19 @@ if uploaded is not None:
         is_ambiguous = "ambiguous: margin < 0.10" in rationale or "margin < 0.10" in rationale
         
         # Debug information (temporary - remove after testing)
-        with st.expander("🔍 Debug Info (Click to view)", expanded=False):
-            st.write(f"- Confidence: {confidence:.3f} ({'< 30%' if confidence < 0.3 else '≥ 30%'})")
-            st.write(f"- Ambiguous: {is_ambiguous}")
-            st.write(f"- Rationale: {rationale}")
-            st.write(f"- Would be added to review queue: {confidence < 0.5 or is_ambiguous}")
+        st.write("🔍 **Debug Info:**")
+        st.write(f"- **Confidence**: {confidence:.3f} ({'< 50%' if confidence < 0.5 else '≥ 50%'})")
+        st.write(f"- **Ambiguous**: {is_ambiguous}")
+        st.write(f"- **Rationale**: {rationale}")
+        st.write(f"- **Review Queue Check**: confidence < 0.5 = {confidence < 0.5}, is_ambiguous = {is_ambiguous}")
+        st.write(f"- **Will be added to review queue**: {confidence < 0.5 or is_ambiguous}")
+        
+        # Show current review queue status
+        current_queue_size = len(st.session_state.get('review_queue', []))
+        st.write(f"- **Current review queue size**: {current_queue_size}")
         
         if confidence < 0.5 or is_ambiguous:  # Low confidence OR ambiguous classification (temporarily raised to 50% for testing)
+            st.write("✅ **ADDING TO REVIEW QUEUE**")
             review_item = {
                 "filename": uploaded.name,
                 "classification": label,
@@ -793,6 +799,9 @@ if uploaded is not None:
                 st.warning(f"⚠️ Ambiguous classification (margin < 10%) added to review queue")
             else:
                 st.warning(f"⚠️ Low confidence result ({confidence:.1%}) added to review queue")
+            st.write(f"📝 **Review queue now has**: {len(st.session_state.review_queue)} documents")
+        else:
+            st.write("❌ **NOT adding to review queue** - confidence too high or not ambiguous")
         
     except Exception as e:
         progress_bar.empty()
